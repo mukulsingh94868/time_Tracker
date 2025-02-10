@@ -86,7 +86,7 @@ export default function Home() {
       <div>Aakash Burman</div>
       <h2 className="text-2xl font-bold mb-4">Calculate Working Hours</h2>
       <textarea
-        className="w-full h-96 max-w-lg p-2 border rounded mb-4"
+        className="w-full h-96 max-w-lg p-2 border rounded mb-4 text-black"
         value={inputData}
         onChange={(e) => setInputData(e.target.value)}
         placeholder="Enter swipe data here..."
