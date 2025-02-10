@@ -90,12 +90,6 @@ export default function Home() {
         onChange={(e) => setInputData(e.target.value)}
         placeholder="Enter swipe data here..."
       ></textarea>
-      <button
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        onClick={handleCalculate}
-      >
-        Calculate
-      </button>
 
       <div className="flex items-center mt-4">
         <input
@@ -108,6 +102,12 @@ export default function Home() {
           Add Default End Time
         </label>
       </div>
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        onClick={handleCalculate}
+      >
+        Calculate
+      </button>
       <div className="mt-4 text-lg font-semibold">{output}</div>
     </div>
   );
