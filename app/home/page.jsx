@@ -91,7 +91,7 @@ export default function Home() {
         placeholder="Enter swipe data here..."
       ></textarea>
 
-      <div className="flex items-center mt-4">
+      <div className="flex items-center mb-3">
         <input
           checked={isDefaultEndTime}
           onChange={() => setIsDefaultEndTime((prev) => !prev)}
