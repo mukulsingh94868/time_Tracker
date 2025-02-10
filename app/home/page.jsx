@@ -83,7 +83,6 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen p-5 flex flex-col justify-center items-center">
-      <div>Aakash Burman</div>
       <h2 className="text-2xl font-bold mb-4">Calculate Working Hours</h2>
       <textarea
         className="w-full h-96 max-w-lg p-2 border rounded mb-4 text-black"
