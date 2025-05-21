@@ -5,7 +5,7 @@ import { useState } from "react";
 export default function Home() {
   const [inputData, setInputData] = useState("");
   const [output, setOutput] = useState("");
-  const [isDefaultEndTime, setIsDefaultEndTime] = useState(false);
+  const [isDefaultEndTime, setIsDefaultEndTime] = useState(true);
 
   const handleCalculate = () => {
     const todaysSwipes = parseSwipeData(inputData, isDefaultEndTime);
@@ -82,33 +82,59 @@ export default function Home() {
   };
 
   return (
-    <div className="w-full h-screen p-5 flex flex-col justify-center items-center">
-      <h2 className="text-2xl font-bold mb-4">Calculate Working Hours</h2>
-      <textarea
-        className="w-full h-96 max-w-lg p-2 border rounded mb-4 text-black"
-        value={inputData}
-        onChange={(e) => setInputData(e.target.value)}
-        placeholder="Enter swipe data here..."
-      ></textarea>
+    <div className="w-full h-screen flex flex-col bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-900">
+      <div className="w-full h-full flex flex-col items-center justify-center px-4 py-10 text-white">
+        <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-8 max-w-2xl w-full">
+          <h2 className="text-3xl font-bold text-indigo-300 mb-6 text-center tracking-wide">
+            Calculate Working Hours
+          </h2>
 
-      <div className="flex items-center mb-3">
-        <input
-          checked={isDefaultEndTime}
-          onChange={() => setIsDefaultEndTime((prev) => !prev)}
-          id="defaultEndTime"
-          type="checkbox"
-        />
-        <label htmlFor="defaultEndTime" className="ml-2 select-none">
-          Add Default End Time
-        </label>
+          <textarea
+            className="w-full h-64 p-4 rounded-lg bg-white/20 text-white placeholder:text-gray-300 outline-none focus:ring-2 focus:ring-indigo-400 resize-none mb-6"
+            value={inputData}
+            onChange={(e) => setInputData(e.target.value)}
+            placeholder="Enter swipe data here..."
+          ></textarea>
+
+          <div className="flex items-center mb-6">
+            <input
+              checked={isDefaultEndTime}
+              onChange={() => setIsDefaultEndTime((prev) => !prev)}
+              id="defaultEndTime"
+              type="checkbox"
+              className="accent-indigo-500 w-4 h-4"
+            />
+            <label htmlFor="defaultEndTime" className="ml-2 text-sm text-gray-200">
+              Add Default End Time
+            </label>
+          </div>
+
+          <button
+            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 text-white font-semibold py-3 rounded-lg shadow-md"
+            onClick={handleCalculate}
+          >
+            Calculate
+          </button>
+
+          {output && (
+            <div className="mt-6 text-center text-xl font-semibold text-indigo-100">
+              {output}
+            </div>
+          )}
+        </div>
       </div>
-      <button
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        onClick={handleCalculate}
-      >
-        Calculate
-      </button>
-      <div className="mt-4 text-lg font-semibold">{output}</div>
+
+      <div className="w-full flex flex-col justify-center items-center bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white py-10 px-4">
+        <div className="text-3xl font-bold mb-6 tracking-wide text-indigo-300">Meet the Developers</div>
+        <div className="flex flex-col sm:flex-row justify-between w-full max-w-[600px] items-center gap-4 text-lg">
+          <div className="bg-white/10 hover:bg-white/20 transition-all rounded-xl px-6 py-4 shadow-lg w-full sm:w-1/2 text-center font-medium text-indigo-100">
+            Aakash Burman
+          </div>
+          <div className="bg-white/10 hover:bg-white/20 transition-all rounded-xl px-6 py-4 shadow-lg w-full sm:w-1/2 text-center font-medium text-indigo-100">
+            Mukul Singh
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
