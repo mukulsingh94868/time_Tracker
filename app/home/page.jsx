@@ -1,16 +1,19 @@
 "use client";
 
+import { MonitorPlay, NotepadText } from "lucide-react";
 import { useState } from "react";
 
 export default function Home() {
   const [inputData, setInputData] = useState("");
   const [output, setOutput] = useState("");
   const [isDefaultEndTime, setIsDefaultEndTime] = useState(true);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const handleCalculate = () => {
     const todaysSwipes = parseSwipeData(inputData, isDefaultEndTime);
     const swipes = convertData(todaysSwipes);
-    if (!swipes) return
+    if (!swipes) return;
     const workingHours = calculateWorkingHours(swipes);
     setOutput(`Total working hours: ${workingHours}`);
   };
@@ -42,9 +45,8 @@ export default function Home() {
       }
     });
 
-    // Append Default End Time if checkbox is checked
     if (addDefaultEndTime && times.length % 2 !== 0) {
-      times.push("18:30:00"); // Adding OUT 18:30:00 as default
+      times.push("18:30:00");
     }
 
     return times;
@@ -53,7 +55,7 @@ export default function Home() {
   const convertData = (data) => {
     if (!data || data.length % 2 !== 0) {
       setOutput("End time missing!");
-      return null; // Returning null instead of false
+      return null;
     }
 
     return data.reduce((acc, _, i, arr) => {
@@ -63,7 +65,6 @@ export default function Home() {
       return acc;
     }, []);
   };
-
 
   const calculateWorkingHours = (swipes) => {
     let totalWorkingSeconds = 0;
@@ -84,7 +85,29 @@ export default function Home() {
   return (
     <div className="w-full h-screen flex flex-col bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-900">
       <div className="w-full h-full flex flex-col items-center justify-center px-4 py-10 text-white">
-        <div className="bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-8 max-w-2xl w-full">
+        <div className="absolute top-4 right-4 flex gap-3">
+          <div className="relative group">
+            <div className="absolute inset-0 rounded-full animate-border-glow bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 z-0"></div>
+            <button
+              onClick={() => setShowGuideModal(true)}
+              className="w-10 h-10 rounded-full  shadow-xl flex items-center justify-center text-lg font-bold text-white z-10 cursor-pointer transform transition duration-300 group-hover:scale-110 group-hover:-rotate-6"
+            >
+              <NotepadText />
+            </button>
+          </div>
+
+          <div className="relative group">
+            <div className="absolute inset-0 rounded-full animate-border-glow bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 z-0"></div>
+            <button
+              onClick={() => setShowVideoModal(true)}
+              className="w-10 h-10 rounded-full  shadow-xl flex items-center justify-center text-lg font-bold text-white z-10 cursor-pointer transform transition duration-300 group-hover:scale-110 group-hover:-rotate-6"
+            >
+              <MonitorPlay />
+            </button>
+          </div>
+        </div>
+
+        <div className="relative bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-8 max-w-2xl w-full">
           <h2 className="text-3xl font-bold text-indigo-300 mb-6 text-center tracking-wide">
             Calculate Working Hours
           </h2>
@@ -94,7 +117,7 @@ export default function Home() {
             value={inputData}
             onChange={(e) => setInputData(e.target.value)}
             placeholder="Enter swipe data here..."
-          ></textarea>
+          />
 
           <div className="flex items-center mb-6">
             <input
@@ -110,14 +133,14 @@ export default function Home() {
           </div>
 
           <button
-            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 text-white font-semibold py-3 rounded-lg shadow-md"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 text-white font-semibold py-3 rounded-lg shadow-md mb-4"
             onClick={handleCalculate}
           >
             Calculate
           </button>
 
           {output && (
-            <div className="mt-6 text-center text-xl font-semibold text-indigo-100">
+            <div className="mt-4 text-center text-xl font-semibold text-indigo-100">
               {output}
             </div>
           )}
@@ -125,7 +148,9 @@ export default function Home() {
       </div>
 
       <div className="w-full flex flex-col justify-center items-center bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white py-10 px-4">
-        <div className="text-3xl font-bold mb-6 tracking-wide text-indigo-300">Meet the Developers</div>
+        <div className="text-3xl font-bold mb-6 tracking-wide text-indigo-300">
+          Meet the Developers
+        </div>
         <div className="flex flex-col sm:flex-row justify-between w-full max-w-[600px] items-center gap-4 text-lg">
           <div className="bg-white/10 hover:bg-white/20 transition-all rounded-xl px-6 py-4 shadow-lg w-full sm:w-1/2 text-center font-medium text-indigo-100">
             Aakash Burman
@@ -135,6 +160,64 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Guide Modal */}
+      {showGuideModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full relative text-gray-900">
+            <button
+              className="absolute top-2 right-2 text-gray-600 hover:text-black font-bold"
+              onClick={() => setShowGuideModal(false)}
+            >
+              ✕
+            </button>
+            <h3 className="text-xl font-bold mb-4">How to Use</h3>
+            <ol className="space-y-2 text-sm">
+              <li>
+                1. <strong>Login to GreytHr:</strong>{" "}
+                <a
+                  href="https://hiretek.greythr.com/"
+                  target="blank"
+                  className="text-indigo-500 hover:underline"
+                >
+                  GreytHr
+                </a>{" "}
+                and log in with your credentials.
+              </li>
+              <li>2. Go to attendance section.</li>
+              <li>3. Copy the swipe data from the "Swipe In/Out" section.</li>
+              <li>4. Paste the data in the text area above.</li>
+              <li>5. Ensure the data format is correct (e.g., "IN" followed by time).</li>
+              <li>6. If you want to auto-append a default OUT time, check the box.</li>
+              <li>7. Click "Calculate" to see the total working hours.</li>
+            </ol>
+          </div>
+        </div>
+      )}
+
+      {/* Video Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-4 max-w-2xl w-full relative">
+            <button
+              className="absolute top-0 right-1 text-gray-600 hover:text-black font-bold"
+              onClick={() => setShowVideoModal(false)}
+            >
+              ✕
+            </button>
+            <div className="w-full aspect-video">
+              <iframe
+                className="w-full h-full rounded-lg"
+                src="/assets/tutorial.mp4"
+                title="Working Hours Guide"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
