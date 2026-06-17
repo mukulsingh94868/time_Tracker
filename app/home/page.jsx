@@ -1,7 +1,7 @@
 "use client";
 
 import { MonitorPlay, NotepadText } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   const [inputData, setInputData] = useState("");
@@ -10,13 +10,30 @@ export default function Home() {
   const [customEndTime, setCustomEndTime] = useState("18:30:00");
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [breakInfo, setBreakInfo] = useState(null);
+
+  const textareaRef = useRef(null);
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
 
   const handleCalculate = () => {
-    const todaysSwipes = parseSwipeData(inputData, isDefaultEndTime, customEndTime);
+    const todaysSwipes = parseSwipeData(
+      inputData,
+      isDefaultEndTime,
+      customEndTime,
+    );
     const swipes = convertData(todaysSwipes);
     if (!swipes) return;
-    const workingHours = calculateWorkingHours(swipes);
-    setOutput(`Total working hours: ${workingHours}`);
+
+    const { workingLabel, breakLabel, breakCount } =
+      calculateWorkingHoursAndBreaks(swipes);
+
+    setOutput(`Total working hours: ${workingLabel}`);
+    setBreakInfo({
+      breakLabel,
+      breakCount,
+    });
   };
 
   const parseSwipeData = (data, useDefault, customEnd = "18:30:00") => {
@@ -37,17 +54,17 @@ export default function Home() {
           if (period.toLowerCase() === "pm" && hours < 12) hours += 12;
           if (period.toLowerCase() === "am" && hours === 12) hours = 0;
 
-          times?.push(
-            `${hours?.toString().padStart(2, "0")}:${minutes
+          times.push(
+            `${hours.toString().padStart(2, "0")}:${minutes
               .toString()
-              .padStart(2, "0")}:${seconds?.toString()?.padStart(2, "0")}`
+              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
           );
         }
       }
     });
 
-    if (times?.length % 2 !== 0) {
-      times?.push(useDefault ? "18:30:00" : customEnd);
+    if (times.length % 2 !== 0) {
+      times.push(useDefault ? "18:30:00" : customEnd);
     }
 
     return times;
@@ -67,28 +84,58 @@ export default function Home() {
     }, []);
   };
 
-  const calculateWorkingHours = (swipes) => {
+  const calculateWorkingHoursAndBreaks = (swipes) => {
     let totalWorkingSeconds = 0;
+    let totalBreakSeconds = 0;
+    let breakCount = 0;
 
-    swipes.forEach(([swipeIn, swipeOut]) => {
+    swipes.forEach(([swipeIn, swipeOut], index) => {
       const timeIn = new Date(`1970-01-01T${swipeIn}Z`);
       const timeOut = new Date(`1970-01-01T${swipeOut}Z`);
       totalWorkingSeconds += (timeOut.getTime() - timeIn.getTime()) / 1000;
+
+      const nextPair = swipes[index + 1];
+      if (nextPair) {
+        const nextIn = new Date(`1970-01-01T${nextPair[0]}Z`);
+        const breakSeconds = (nextIn.getTime() - timeOut.getTime()) / 1000;
+        if (breakSeconds > 0) {
+          totalBreakSeconds += breakSeconds;
+          breakCount += 1;
+        }
+      }
     });
 
     const totalHours = Math.floor(totalWorkingSeconds / 3600);
     const totalMinutes = Math.floor((totalWorkingSeconds % 3600) / 60);
     const totalSeconds = Math.floor(totalWorkingSeconds % 60);
 
-    return `${totalHours} hr : ${totalMinutes} min : ${totalSeconds} sec`;
+    const breakHours = Math.floor(totalBreakSeconds / 3600);
+    const breakMinutes = Math.floor((totalBreakSeconds % 3600) / 60);
+    const breakSeconds = Math.floor(totalBreakSeconds % 60);
+
+    return {
+      workingLabel: `${totalHours} hr : ${totalMinutes} min : ${totalSeconds} sec`,
+      breakLabel: `${breakHours} hr : ${breakMinutes} min : ${breakSeconds} sec`,
+      breakCount,
+    };
   };
+
+  useEffect(() => {
+    if (inputData.trim() === "") {
+      setOutput("");
+      setBreakInfo(null);
+    }
+  }, [inputData]);
 
   return (
     <div className="w-full h-screen flex flex-col bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-900">
       <div className="w-full h-full flex flex-col items-center justify-center px-4 py-10 text-white">
         {/* Top Buttons */}
         <div className="absolute top-4 right-4 flex gap-3">
-          {[["Guide", setShowGuideModal, NotepadText], ["Video", setShowVideoModal, MonitorPlay]]?.map(([_, handler, Icon], i) => (
+          {[
+            ["Guide", setShowGuideModal, NotepadText],
+            ["Video", setShowVideoModal, MonitorPlay],
+          ]?.map(([_, handler, Icon], i) => (
             <div key={i} className="relative group">
               <div className="absolute inset-0 rounded-full animate-border-glow bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 z-0"></div>
               <button
@@ -108,6 +155,7 @@ export default function Home() {
           </h2>
 
           <textarea
+            ref={textareaRef} // auto focus
             className="w-full h-64 p-4 rounded-lg bg-white/20 text-white placeholder:text-gray-300 outline-none focus:ring-2 focus:ring-indigo-400 resize-none mb-6"
             value={inputData}
             onChange={(e) => setInputData(e.target.value)}
@@ -122,14 +170,20 @@ export default function Home() {
               type="checkbox"
               className="accent-indigo-500 w-4 h-4"
             />
-            <label htmlFor="defaultEndTime" className="ml-2 text-sm text-gray-200">
+            <label
+              htmlFor="defaultEndTime"
+              className="ml-2 text-sm text-gray-200"
+            >
               Use Default OUT Time (6:30 PM)
             </label>
           </div>
 
           {!isDefaultEndTime && (
             <div className="mb-6 ml-1 w-full flex items-center gap-4 bg-white/10 border border-white/20 p-3 rounded-lg shadow-inner transition duration-300">
-              <label htmlFor="customEndTime" className="text-sm font-medium text-indigo-200 w-40">
+              <label
+                htmlFor="customEndTime"
+                className="text-sm font-medium text-indigo-200 w-40"
+              >
                 ⏰ Custom OUT Time:
               </label>
               <input
@@ -152,6 +206,24 @@ export default function Home() {
           {output && (
             <div className="mt-4 text-center text-xl font-semibold text-indigo-100">
               {output}
+            </div>
+          )}
+
+          {breakInfo && (
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs sm:text-sm">
+              <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
+                <span className="text-slate-300">Breaks taken</span>
+                <span className="font-semibold text-white">
+                  {breakInfo.breakCount}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
+                <span className="text-slate-300">Total break time</span>
+                <span className="font-semibold text-emerald-300">
+                  {breakInfo.breakLabel}
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -198,7 +270,10 @@ export default function Home() {
               <li>2. Go to attendance section.</li>
               <li>3. Copy the swipe data from the "Swipe In/Out" section.</li>
               <li>4. Paste the data in the text area above.</li>
-              <li>5. If one OUT time is missing, provide it via the checkbox or custom time.</li>
+              <li>
+                5. If one OUT time is missing, provide it via the checkbox or
+                custom time.
+              </li>
               <li>6. Click "Calculate" to see the total working hours.</li>
             </ol>
           </div>
