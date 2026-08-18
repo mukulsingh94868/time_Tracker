@@ -3,11 +3,20 @@
 import { MonitorPlay, NotepadText } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
+const getCurrentTimeStr = () => {
+  const now = new Date();
+  return `${now.getHours().toString().padStart(2, "0")}:${now
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
+};
+
 export default function Home() {
   const [inputData, setInputData] = useState("");
   const [output, setOutput] = useState("");
-  const [isDefaultEndTime, setIsDefaultEndTime] = useState(true);
+  const [endTimeMode, setEndTimeMode] = useState("default"); // "default" | "current" | "custom"
   const [customEndTime, setCustomEndTime] = useState("18:30:00");
+  const [currentEndTime, setCurrentEndTime] = useState(getCurrentTimeStr());
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [breakInfo, setBreakInfo] = useState(null);
@@ -18,25 +27,26 @@ export default function Home() {
   }, []);
 
   const handleCalculate = () => {
-    const todaysSwipes = parseSwipeData(
-      inputData,
-      isDefaultEndTime,
-      customEndTime,
-    );
+    let effectiveEndTime = "18:30:00";
+    if (endTimeMode === "custom") effectiveEndTime = customEndTime;
+    if (endTimeMode === "current") effectiveEndTime = currentEndTime;
+
+    const todaysSwipes = parseSwipeData(inputData, effectiveEndTime);
     const swipes = convertData(todaysSwipes);
     if (!swipes) return;
 
-    const { workingLabel, breakLabel, breakCount } =
+    const { workingLabel, breakLabel, breakCount, breakSessions } =
       calculateWorkingHoursAndBreaks(swipes);
 
     setOutput(`Total working hours: ${workingLabel}`);
     setBreakInfo({
       breakLabel,
       breakCount,
+      breakSessions,
     });
   };
 
-  const parseSwipeData = (data, useDefault, customEnd = "18:30:00") => {
+  const parseSwipeData = (data, endTime) => {
     const lines = data
       .split("\n")
       .map((line) => line.trim())
@@ -64,7 +74,7 @@ export default function Home() {
     });
 
     if (times.length % 2 !== 0) {
-      times.push(useDefault ? "18:30:00" : customEnd);
+      times.push(endTime);
     }
 
     return times;
@@ -84,10 +94,27 @@ export default function Home() {
     }, []);
   };
 
+  const formatDuration = (totalSecondsRaw) => {
+    const hours = Math.floor(totalSecondsRaw / 3600);
+    const minutes = Math.floor((totalSecondsRaw % 3600) / 60);
+    const seconds = Math.floor(totalSecondsRaw % 60);
+    return `${hours} hr : ${minutes} min : ${seconds} sec`;
+  };
+
+  const formatClock = (time) => {
+    const [h, m, s] = time.split(":").map(Number);
+    const period = h >= 12 ? "pm" : "am";
+    const hour12 = h % 12 === 0 ? 12 : h % 12;
+    return `${hour12.toString().padStart(2, "0")}:${m
+      .toString()
+      .padStart(2, "0")}:${s.toString().padStart(2, "0")} ${period}`;
+  };
+
   const calculateWorkingHoursAndBreaks = (swipes) => {
     let totalWorkingSeconds = 0;
     let totalBreakSeconds = 0;
     let breakCount = 0;
+    const breakSessions = [];
 
     swipes.forEach(([swipeIn, swipeOut], index) => {
       const timeIn = new Date(`1970-01-01T${swipeIn}Z`);
@@ -101,22 +128,20 @@ export default function Home() {
         if (breakSeconds > 0) {
           totalBreakSeconds += breakSeconds;
           breakCount += 1;
+          breakSessions.push({
+            start: swipeOut,
+            end: nextPair[0],
+            label: formatDuration(breakSeconds),
+          });
         }
       }
     });
 
-    const totalHours = Math.floor(totalWorkingSeconds / 3600);
-    const totalMinutes = Math.floor((totalWorkingSeconds % 3600) / 60);
-    const totalSeconds = Math.floor(totalWorkingSeconds % 60);
-
-    const breakHours = Math.floor(totalBreakSeconds / 3600);
-    const breakMinutes = Math.floor((totalBreakSeconds % 3600) / 60);
-    const breakSeconds = Math.floor(totalBreakSeconds % 60);
-
     return {
-      workingLabel: `${totalHours} hr : ${totalMinutes} min : ${totalSeconds} sec`,
-      breakLabel: `${breakHours} hr : ${breakMinutes} min : ${breakSeconds} sec`,
+      workingLabel: formatDuration(totalWorkingSeconds),
+      breakLabel: formatDuration(totalBreakSeconds),
       breakCount,
+      breakSessions,
     };
   };
 
@@ -162,23 +187,54 @@ export default function Home() {
             placeholder="Enter swipe data here..."
           />
 
-          <div className="flex items-center mb-4">
-            <input
-              checked={isDefaultEndTime}
-              onChange={() => setIsDefaultEndTime((prev) => !prev)}
-              id="defaultEndTime"
-              type="checkbox"
-              className="accent-indigo-500 w-4 h-4"
-            />
+          <div className="mb-4">
             <label
-              htmlFor="defaultEndTime"
-              className="ml-2 text-sm text-gray-200"
+              htmlFor="endTimeMode"
+              className="block text-sm text-gray-200 mb-2"
             >
-              Use Default OUT Time (6:30 PM)
+              OUT Time Source
             </label>
+            <select
+              id="endTimeMode"
+              value={endTimeMode}
+              onChange={(e) => {
+                const mode = e.target.value;
+                setEndTimeMode(mode);
+                if (mode === "current") setCurrentEndTime(getCurrentTimeStr());
+              }}
+              className="w-full bg-white/20 text-white border border-white/30 backdrop-blur-sm px-4 py-2 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
+            >
+              <option className="text-black" value="default">
+                Default Time (6:30 PM)
+              </option>
+              <option className="text-black" value="current">
+                Current Time
+              </option>
+              <option className="text-black" value="custom">
+                Custom Time
+              </option>
+            </select>
           </div>
 
-          {!isDefaultEndTime && (
+          {endTimeMode === "current" && (
+            <div className="mb-6 ml-1 w-full flex items-center gap-4 bg-white/10 border border-white/20 p-3 rounded-lg shadow-inner transition duration-300">
+              <span className="text-sm font-medium text-indigo-200 w-40">
+                🕒 Current OUT Time:
+              </span>
+              <span className="flex-1 text-white font-semibold">
+                {formatClock(currentEndTime)}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentEndTime(getCurrentTimeStr())}
+                className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md transition-all duration-200"
+              >
+                Refresh
+              </button>
+            </div>
+          )}
+
+          {endTimeMode === "custom" && (
             <div className="mb-6 ml-1 w-full flex items-center gap-4 bg-white/10 border border-white/20 p-3 rounded-lg shadow-inner transition duration-300">
               <label
                 htmlFor="customEndTime"
@@ -223,6 +279,32 @@ export default function Home() {
                 <span className="font-semibold text-emerald-300">
                   {breakInfo.breakLabel}
                 </span>
+              </div>
+            </div>
+          )}
+
+          {breakInfo && breakInfo.breakSessions.length > 0 && (
+            <div className="mt-4 rounded-lg bg-white/10 p-3">
+              <div className="text-xs font-semibold text-slate-300 mb-2 text-center uppercase tracking-wide">
+                Break Sessions
+              </div>
+              <div className="flex flex-col gap-1.5">
+                {breakInfo.breakSessions.map((session, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between text-xs sm:text-sm bg-white/5 rounded-md px-3 py-2"
+                  >
+                    <span className="text-slate-300">
+                      Break {i + 1}{" "}
+                      <span className="text-slate-400">
+                        ({formatClock(session.start)} - {formatClock(session.end)})
+                      </span>
+                    </span>
+                    <span className="font-semibold text-emerald-300">
+                      {session.label}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -271,8 +353,8 @@ export default function Home() {
               <li>3. Copy the swipe data from the "Swipe In/Out" section.</li>
               <li>4. Paste the data in the text area above.</li>
               <li>
-                5. If one OUT time is missing, provide it via the checkbox or
-                custom time.
+                5. If one OUT time is missing, choose Default, Current, or
+                Custom time from the dropdown to provide it.
               </li>
               <li>6. Click "Calculate" to see the total working hours.</li>
             </ol>
