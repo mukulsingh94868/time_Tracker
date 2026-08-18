@@ -1,6 +1,6 @@
 "use client";
 
-import { MonitorPlay, NotepadText, Clock, Coffee, Clipboard, Calculator } from "lucide-react";
+import { MonitorPlay, NotepadText, Clock, Coffee, Clipboard, Calculator, Hourglass } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 const getCurrentTimeStr = () => {
@@ -187,8 +187,13 @@ export default function Home() {
     }
   }, [inputData]);
 
+  const STANDARD_WORKDAY_SECONDS = 8 * 3600;
+
   const workingHM = splitHoursMinutes(breakInfo?.workingSeconds ?? 0);
   const breakHM = splitHoursMinutes(breakInfo?.breakSeconds ?? 0);
+  const remainingBreakSeconds = (breakInfo?.workingSeconds ?? 0) - STANDARD_WORKDAY_SECONDS;
+  const isWorkingHoursShort = remainingBreakSeconds < 0;
+  const remainingBreakHM = splitHoursMinutes(Math.abs(remainingBreakSeconds));
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -347,34 +352,73 @@ export default function Home() {
         {breakInfo && (
           <div className="mt-6 space-y-6">
             {/* Summary Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-5 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)]">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-5 rounded-xl bg-[var(--success-bg)] border-2 border-[var(--success-border)]">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-md bg-[var(--success-bg)] flex items-center justify-center">
-                    <Clock className="w-3.5 h-3.5 text-[var(--success)]" />
+                  <div className="w-7 h-7 rounded-md bg-[var(--success-bg)] flex items-center justify-center">
+                    <Clock className="w-4 h-4 text-[var(--success)]" />
                   </div>
-                  <span className="text-sm text-[var(--text-secondary)]">Total Working Hours</span>
+                  <span className="text-sm font-semibold uppercase tracking-wide text-[var(--success)]">Total Working Hours</span>
                 </div>
-                <div className="flex items-baseline gap-1 font-mono tabular-nums">
+                <div className="flex items-baseline font-mono tabular-nums">
                   <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.h}</span>
-                  <span className="text-base text-[var(--text-muted)] mr-1.5">h</span>
+                  <span className="text-sm font-semibold text-[var(--success)] ml-1 mr-3">hr</span>
                   <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.m}</span>
-                  <span className="text-base text-[var(--text-muted)]">m</span>
+                  <span className="text-sm font-semibold text-[var(--success)] ml-1">min</span>
                 </div>
               </div>
-              <div className="p-5 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)]">
+              <div className="p-5 rounded-xl bg-[var(--warning-bg)] border-2 border-[var(--warning-border)]">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-6 h-6 rounded-md bg-[var(--warning-bg)] flex items-center justify-center">
-                    <Coffee className="w-3.5 h-3.5 text-[var(--warning)]" />
+                  <div className="w-7 h-7 rounded-md bg-[var(--warning-bg)] flex items-center justify-center">
+                    <Coffee className="w-4 h-4 text-[var(--warning)]" />
                   </div>
-                  <span className="text-sm text-[var(--text-secondary)]">Total Break Time</span>
+                  <span className="text-sm font-semibold uppercase tracking-wide text-[var(--warning)]">Total Break Time</span>
                 </div>
-                <div className="flex items-baseline gap-1 font-mono tabular-nums">
+                <div className="flex items-baseline font-mono tabular-nums">
                   <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.h}</span>
-                  <span className="text-base text-[var(--text-muted)] mr-1.5">h</span>
+                  <span className="text-sm font-semibold text-[var(--warning)] ml-1 mr-3">hr</span>
                   <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.m}</span>
-                  <span className="text-base text-[var(--text-muted)]">m</span>
+                  <span className="text-sm font-semibold text-[var(--warning)] ml-1">min</span>
                 </div>
+              </div>
+              <div
+                className={`p-5 rounded-xl border-2 ${
+                  isWorkingHoursShort
+                    ? "bg-[var(--danger-bg)] border-[var(--danger-border)]"
+                    : "bg-[var(--info-bg)] border-[var(--info-border)]"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div
+                    className={`w-7 h-7 rounded-md flex items-center justify-center ${
+                      isWorkingHoursShort ? "bg-[var(--danger-bg)]" : "bg-[var(--info-bg)]"
+                    }`}
+                  >
+                    <Hourglass className={`w-4 h-4 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`} />
+                  </div>
+                  <span
+                    className={`text-sm font-semibold uppercase tracking-wide ${
+                      isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"
+                    }`}
+                  >
+                    Remaining Break Time
+                  </span>
+                </div>
+                <div className="flex items-baseline font-mono tabular-nums">
+                  {isWorkingHoursShort && (
+                    <span className="text-3xl sm:text-4xl font-bold text-[var(--danger)] mr-0.5">-</span>
+                  )}
+                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{remainingBreakHM.h}</span>
+                  <span className={`text-sm font-semibold ml-1 mr-3 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`}>hr</span>
+                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{remainingBreakHM.m}</span>
+                  <span className={`text-sm font-semibold ml-1 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`}>min</span>
+                </div>
+                <p className="mt-2 text-xs text-[var(--text-muted)]">Working time beyond 8h</p>
+                {isWorkingHoursShort && (
+                  <p className="mt-3 text-sm font-medium text-[var(--danger)]">
+                    You need to work {remainingBreakHM.h}h {remainingBreakHM.m}m more to complete your 8h total working hours.
+                  </p>
+                )}
               </div>
             </div>
 
