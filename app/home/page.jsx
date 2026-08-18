@@ -1,6 +1,6 @@
 "use client";
 
-import { MonitorPlay, NotepadText } from "lucide-react";
+import { MonitorPlay, NotepadText, Clock, Coffee, Clipboard, Calculator } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 const getCurrentTimeStr = () => {
@@ -14,7 +14,7 @@ const getCurrentTimeStr = () => {
 export default function Home() {
   const [inputData, setInputData] = useState("");
   const [output, setOutput] = useState("");
-  const [endTimeMode, setEndTimeMode] = useState("default"); // "default" | "current" | "custom"
+  const [endTimeMode, setEndTimeMode] = useState("default");
   const [customEndTime, setCustomEndTime] = useState("18:30:00");
   const [currentEndTime, setCurrentEndTime] = useState(getCurrentTimeStr());
   const [showGuideModal, setShowGuideModal] = useState(false);
@@ -35,15 +35,32 @@ export default function Home() {
     const swipes = convertData(todaysSwipes);
     if (!swipes) return;
 
-    const { workingLabel, breakLabel, breakCount, breakSessions } =
-      calculateWorkingHoursAndBreaks(swipes);
+    const {
+      workingLabel,
+      breakLabel,
+      breakCount,
+      breakSessions,
+      workingSeconds,
+      breakSeconds,
+    } = calculateWorkingHoursAndBreaks(swipes);
 
     setOutput(`Total working hours: ${workingLabel}`);
     setBreakInfo({
       breakLabel,
       breakCount,
       breakSessions,
+      workingSeconds,
+      breakSeconds,
     });
+  };
+
+  const handlePasteFromClipboard = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) setInputData(text);
+    } catch (err) {
+      // Clipboard access denied or unavailable; ignore silently.
+    }
   };
 
   const parseSwipeData = (data, endTime) => {
@@ -101,6 +118,21 @@ export default function Home() {
     return `${hours} hr : ${minutes} min : ${seconds} sec`;
   };
 
+  const formatDurationCompact = (totalSecondsRaw) => {
+    const hours = Math.floor(totalSecondsRaw / 3600);
+    const minutes = Math.floor((totalSecondsRaw % 3600) / 60);
+    const seconds = Math.floor(totalSecondsRaw % 60).toString().padStart(2, "0");
+    if (hours > 0) {
+      return `${hours}h ${minutes.toString().padStart(2, "0")}m ${seconds}s`;
+    }
+    return `${minutes}m ${seconds}s`;
+  };
+
+  const splitHoursMinutes = (totalSecondsRaw) => ({
+    h: Math.floor(totalSecondsRaw / 3600),
+    m: Math.floor((totalSecondsRaw % 3600) / 60),
+  });
+
   const formatClock = (time) => {
     const [h, m, s] = time.split(":").map(Number);
     const period = h >= 12 ? "pm" : "am";
@@ -132,6 +164,7 @@ export default function Home() {
             start: swipeOut,
             end: nextPair[0],
             label: formatDuration(breakSeconds),
+            shortLabel: formatDurationCompact(breakSeconds),
           });
         }
       }
@@ -142,6 +175,8 @@ export default function Home() {
       breakLabel: formatDuration(totalBreakSeconds),
       breakCount,
       breakSessions,
+      workingSeconds: totalWorkingSeconds,
+      breakSeconds: totalBreakSeconds,
     };
   };
 
@@ -152,211 +187,322 @@ export default function Home() {
     }
   }, [inputData]);
 
+  const workingHM = splitHoursMinutes(breakInfo?.workingSeconds ?? 0);
+  const breakHM = splitHoursMinutes(breakInfo?.breakSeconds ?? 0);
+
   return (
-    <div className="w-full h-screen flex flex-col bg-gradient-to-br from-gray-900 via-slate-900 to-indigo-900">
-      <div className="w-full h-full flex flex-col items-center justify-center px-4 py-10 text-white">
-        {/* Top Buttons */}
-        <div className="absolute top-4 right-4 flex gap-3">
-          {[
-            ["Guide", setShowGuideModal, NotepadText],
-            ["Video", setShowVideoModal, MonitorPlay],
-          ]?.map(([_, handler, Icon], i) => (
-            <div key={i} className="relative group">
-              <div className="absolute inset-0 rounded-full animate-border-glow bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 z-0"></div>
-              <button
-                onClick={() => handler(true)}
-                className="w-10 h-10 rounded-full shadow-xl flex items-center justify-center text-lg font-bold text-white z-10 cursor-pointer transform transition duration-300 group-hover:scale-110 group-hover:-rotate-6"
-              >
-                <Icon />
-              </button>
+    <div className="min-h-screen bg-[var(--background)]">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--header-bg)]/90 backdrop-blur-md">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-          ))}
+            <span className="text-lg font-bold text-[var(--text-primary)] tracking-tight">Zentek Time Tracker</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowGuideModal(true)}
+              title="Guide"
+              className="w-9 h-9 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
+            >
+              <NotepadText className="w-[18px] h-[18px]" />
+            </button>
+            <button
+              onClick={() => setShowVideoModal(true)}
+              title="Video Tutorial"
+              className="w-9 h-9 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors"
+            >
+              <MonitorPlay className="w-[18px] h-[18px]" />
+            </button>
+          </div>
         </div>
+      </header>
 
-        {/* Main Card */}
-        <div className="relative bg-white/10 backdrop-blur-md shadow-xl rounded-2xl p-8 max-w-2xl w-full">
-          <h2 className="text-3xl font-bold text-indigo-300 mb-6 text-center tracking-wide">
+      {/* Main Content */}
+      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Title Section */}
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
             Calculate Working Hours
-          </h2>
+          </h1>
+          <p className="mt-2 text-[var(--text-secondary)] max-w-lg mx-auto">
+            Paste your swipe logs below to calculate your effective working hours and breaks.
+          </p>
+        </div>
 
-          <textarea
-            ref={textareaRef} // auto focus
-            className="w-full h-64 p-4 rounded-lg bg-white/20 text-white placeholder:text-gray-300 outline-none focus:ring-2 focus:ring-indigo-400 resize-none mb-6"
-            value={inputData}
-            onChange={(e) => setInputData(e.target.value)}
-            placeholder="Enter swipe data here..."
-          />
-
-          <div className="mb-4">
-            <label
-              htmlFor="endTimeMode"
-              className="block text-sm text-gray-200 mb-2"
-            >
-              OUT Time Source
-            </label>
-            <select
-              id="endTimeMode"
-              value={endTimeMode}
-              onChange={(e) => {
-                const mode = e.target.value;
-                setEndTimeMode(mode);
-                if (mode === "current") setCurrentEndTime(getCurrentTimeStr());
-              }}
-              className="w-full bg-white/20 text-white border border-white/30 backdrop-blur-sm px-4 py-2 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
-            >
-              <option className="text-black" value="default">
-                Default Time (6:30 PM)
-              </option>
-              <option className="text-black" value="current">
-                Current Time
-              </option>
-              <option className="text-black" value="custom">
-                Custom Time
-              </option>
-            </select>
-          </div>
-
-          {endTimeMode === "current" && (
-            <div className="mb-6 ml-1 w-full flex items-center gap-4 bg-white/10 border border-white/20 p-3 rounded-lg shadow-inner transition duration-300">
-              <span className="text-sm font-medium text-indigo-200 w-40">
-                🕒 Current OUT Time:
-              </span>
-              <span className="flex-1 text-white font-semibold">
-                {formatClock(currentEndTime)}
-              </span>
-              <button
-                type="button"
-                onClick={() => setCurrentEndTime(getCurrentTimeStr())}
-                className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md transition-all duration-200"
-              >
-                Refresh
-              </button>
-            </div>
-          )}
-
-          {endTimeMode === "custom" && (
-            <div className="mb-6 ml-1 w-full flex items-center gap-4 bg-white/10 border border-white/20 p-3 rounded-lg shadow-inner transition duration-300">
+        {/* Input Card */}
+        <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-[var(--shadow)] overflow-hidden">
+          <div className="p-5 sm:p-6">
+            {/* Textarea */}
+            <div className="mb-5">
               <label
-                htmlFor="customEndTime"
-                className="text-sm font-medium text-indigo-200 w-40"
+                htmlFor="swipe-data"
+                className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2"
               >
-                ⏰ Custom OUT Time:
+                Swipe Data Logs
               </label>
-              <input
-                id="customEndTime"
-                type="time"
-                value={customEndTime}
-                onChange={(e) => setCustomEndTime(e.target.value)}
-                className="bg-white/20 text-white border border-white/30 backdrop-blur-sm px-4 py-2 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-40 transition-all duration-300"
-              />
+              <div className="relative">
+                <textarea
+                  ref={textareaRef}
+                  id="swipe-data"
+                  className="w-full h-56 p-3.5 pr-12 text-sm leading-relaxed font-mono rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] resize-none transition-all"
+                  value={inputData}
+                  onChange={(e) => setInputData(e.target.value)}
+                  placeholder={"Paste your swipe logs here...\n\nExample:\nIN\n09:00:15 am\nOUT\n01:00:30 pm\nIN\n01:45:00 pm"}
+                />
+                <button
+                  type="button"
+                  onClick={handlePasteFromClipboard}
+                  title="Paste from clipboard"
+                  className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+                >
+                  <Clipboard className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-          )}
 
-          <button
-            className="w-full bg-indigo-600 hover:bg-indigo-700 transition-all duration-200 text-white font-semibold py-3 rounded-lg shadow-md mb-4"
-            onClick={handleCalculate}
-          >
-            Calculate
-          </button>
-
-          {output && (
-            <div className="mt-4 text-center text-xl font-semibold text-indigo-100">
-              {output}
+            {/* OUT Time Source */}
+            <div className="mb-5">
+              <label
+                htmlFor="endTimeMode"
+                className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2"
+              >
+                Out Time Source
+              </label>
+              <select
+                id="endTimeMode"
+                value={endTimeMode}
+                onChange={(e) => {
+                  const mode = e.target.value;
+                  setEndTimeMode(mode);
+                  if (mode === "current") setCurrentEndTime(getCurrentTimeStr());
+                }}
+                className="w-full sm:w-72 px-3.5 py-2.5 text-sm rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-primary)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] transition-all appearance-none cursor-pointer"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b93a7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
+              >
+                <option value="default">Default Time (6:30 PM)</option>
+                <option value="current">Current Time</option>
+                <option value="custom">Custom Time</option>
+              </select>
             </div>
-          )}
 
-          {breakInfo && (
-            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3 text-xs sm:text-sm">
-              <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                <span className="text-slate-300">Breaks taken</span>
-                <span className="font-semibold text-white">
-                  {breakInfo.breakCount}
+            {/* Current Time Row */}
+            {endTimeMode === "current" && (
+              <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-lg bg-[var(--input-bg)] border border-[var(--card-border)]">
+                <span className="text-sm font-medium text-[var(--text-secondary)]">
+                  Current OUT Time
                 </span>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5">
-                <span className="text-slate-300">Total break time</span>
-                <span className="font-semibold text-emerald-300">
-                  {breakInfo.breakLabel}
+                <span className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">
+                  {formatClock(currentEndTime)}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => setCurrentEndTime(getCurrentTimeStr())}
+                  className="sm:ml-auto text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-hover)] px-3 py-1.5 rounded-md hover:bg-[var(--primary-light)] transition-colors"
+                >
+                  Refresh
+                </button>
               </div>
-            </div>
-          )}
+            )}
 
-          {breakInfo && breakInfo.breakSessions.length > 0 && (
-            <div className="mt-4 rounded-lg bg-white/10 p-3">
-              <div className="text-xs font-semibold text-slate-300 mb-2 text-center uppercase tracking-wide">
-                Break Sessions
+            {/* Custom Time Row */}
+            {endTimeMode === "custom" && (
+              <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-lg bg-[var(--input-bg)] border border-[var(--card-border)]">
+                <label
+                  htmlFor="customEndTime"
+                  className="text-sm font-medium text-[var(--text-secondary)]"
+                >
+                  Custom OUT Time
+                </label>
+                <input
+                  id="customEndTime"
+                  type="time"
+                  value={customEndTime}
+                  onChange={(e) => setCustomEndTime(e.target.value)}
+                  className="px-3.5 py-2 text-sm rounded-lg border border-[var(--input-border)] bg-[var(--card-bg)] text-[var(--text-primary)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] transition-all"
+                />
               </div>
-              <div className="flex flex-col gap-1.5">
-                {breakInfo.breakSessions.map((session, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between text-xs sm:text-sm bg-white/5 rounded-md px-3 py-2"
-                  >
-                    <span className="text-slate-300">
-                      Break {i + 1}{" "}
-                      <span className="text-slate-400">
-                        ({formatClock(session.start)} - {formatClock(session.end)})
-                      </span>
-                    </span>
-                    <span className="font-semibold text-emerald-300">
-                      {session.label}
-                    </span>
+            )}
+
+            {/* Calculate Button */}
+            <button
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-2.5 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98]"
+              onClick={handleCalculate}
+            >
+              <Calculator className="w-4 h-4" />
+              Calculate
+            </button>
+
+            {!breakInfo && output && (
+              <p className="mt-4 text-sm text-red-400">{output}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Results Section */}
+        {breakInfo && (
+          <div className="mt-6 space-y-6">
+            {/* Summary Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-5 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-md bg-[var(--success-bg)] flex items-center justify-center">
+                    <Clock className="w-3.5 h-3.5 text-[var(--success)]" />
                   </div>
-                ))}
+                  <span className="text-sm text-[var(--text-secondary)]">Total Working Hours</span>
+                </div>
+                <div className="flex items-baseline gap-1 font-mono tabular-nums">
+                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.h}</span>
+                  <span className="text-base text-[var(--text-muted)] mr-1.5">h</span>
+                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.m}</span>
+                  <span className="text-base text-[var(--text-muted)]">m</span>
+                </div>
+              </div>
+              <div className="p-5 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)]">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-6 h-6 rounded-md bg-[var(--warning-bg)] flex items-center justify-center">
+                    <Coffee className="w-3.5 h-3.5 text-[var(--warning)]" />
+                  </div>
+                  <span className="text-sm text-[var(--text-secondary)]">Total Break Time</span>
+                </div>
+                <div className="flex items-baseline gap-1 font-mono tabular-nums">
+                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.h}</span>
+                  <span className="text-base text-[var(--text-muted)] mr-1.5">h</span>
+                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.m}</span>
+                  <span className="text-base text-[var(--text-muted)]">m</span>
+                </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
 
-      {/* Developer Section */}
-      <div className="w-full flex flex-col justify-center items-center bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white py-10 px-4">
-        <div className="text-3xl font-bold mb-6 tracking-wide text-indigo-300">
-          Meet the Developers
-        </div>
-        <div className="flex flex-col sm:flex-row justify-between w-full max-w-[600px] items-center gap-4 text-lg">
-          <div className="bg-white/10 hover:bg-white/20 transition-all rounded-xl px-6 py-4 shadow-lg w-full sm:w-1/2 text-center font-medium text-indigo-100">
-            Aakash Burman
+            {/* Break Sessions Table */}
+            {breakInfo.breakSessions.length > 0 && (
+              <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl overflow-hidden">
+                <div className="px-5 py-4 border-b border-[var(--card-border)]">
+                  <h3 className="text-base font-semibold text-[var(--text-primary)]">
+                    Break Sessions
+                  </h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                        <th className="text-left px-5 py-2.5">Session</th>
+                        <th className="text-left px-5 py-2.5">Time Interval</th>
+                        <th className="text-right px-5 py-2.5">Duration</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--card-border)]">
+                      {breakInfo.breakSessions.map((session, i) => (
+                        <tr
+                          key={i}
+                          className="hover:bg-[var(--surface-hover)] transition-colors"
+                        >
+                          <td className="px-5 py-3 text-[var(--text-primary)] font-medium whitespace-nowrap">
+                            Break {i + 1}
+                          </td>
+                          <td className="px-5 py-3 text-[var(--text-secondary)] font-mono whitespace-nowrap">
+                            {formatClock(session.start)} - {formatClock(session.end)}
+                          </td>
+                          <td className="px-5 py-3 text-right text-[var(--warning)] font-mono font-semibold whitespace-nowrap">
+                            {session.shortLabel}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
-          <div className="bg-white/10 hover:bg-white/20 transition-all rounded-xl px-6 py-4 shadow-lg w-full sm:w-1/2 text-center font-medium text-indigo-100">
-            Mukul Singh
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="mt-16 border-t border-[var(--card-border)] bg-[var(--header-bg)]">
+        <div id="developers" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-8">
+            Meet the Developers
+          </h2>
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
+            <div className="inline-flex items-center gap-3 pl-2 pr-6 py-2.5 rounded-full bg-[var(--card-bg)] border border-[var(--card-border)]">
+              <span className="w-10 h-10 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-base font-semibold flex items-center justify-center">
+                AB
+              </span>
+              <span className="text-base sm:text-lg font-medium text-[var(--text-primary)]">Aakash Burman</span>
+            </div>
+            <div className="inline-flex items-center gap-3 pl-2 pr-6 py-2.5 rounded-full bg-[var(--card-bg)] border border-[var(--card-border)]">
+              <span className="w-10 h-10 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-base font-semibold flex items-center justify-center">
+                MS
+              </span>
+              <span className="text-base sm:text-lg font-medium text-[var(--text-primary)]">Mukul Singh</span>
+            </div>
           </div>
         </div>
-      </div>
+      </footer>
 
       {/* Guide Modal */}
       {showGuideModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full relative text-gray-900">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowGuideModal(false)}
+        >
+          <div
+            className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-[var(--shadow-lg)] max-w-xl w-full p-6 relative"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
-              className="absolute top-2 right-2 text-gray-600 hover:text-black font-bold"
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
               onClick={() => setShowGuideModal(false)}
             >
-              ✕
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
-            <h3 className="text-xl font-bold mb-4">How to Use</h3>
-            <ol className="space-y-2 text-sm">
-              <li>
-                1. <strong>Login to GreytHr:</strong>{" "}
-                <a
-                  href="https://hiretek.greythr.com/"
-                  target="blank"
-                  className="text-indigo-500 hover:underline"
-                >
-                  GreytHr
-                </a>{" "}
-                and log in with your credentials.
+            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
+              How to Use
+            </h3>
+            <p className="text-sm text-[var(--text-secondary)] mb-5">
+              Follow these steps to calculate your working hours.
+            </p>
+            <ol className="space-y-3 text-sm text-[var(--text-secondary)]">
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-semibold flex items-center justify-center mt-0.5">1</span>
+                <span>
+                  <strong className="text-[var(--text-primary)]">Login to GreytHr:</strong>{" "}
+                  <a
+                    href="https://hiretek.greythr.com/"
+                    target="blank"
+                    className="text-[var(--primary)] hover:underline"
+                  >
+                    GreytHr
+                  </a>{" "}
+                  and log in with your credentials.
+                </span>
               </li>
-              <li>2. Go to attendance section.</li>
-              <li>3. Copy the swipe data from the "Swipe In/Out" section.</li>
-              <li>4. Paste the data in the text area above.</li>
-              <li>
-                5. If one OUT time is missing, choose Default, Current, or
-                Custom time from the dropdown to provide it.
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-semibold flex items-center justify-center mt-0.5">2</span>
+                <span>Go to attendance section.</span>
               </li>
-              <li>6. Click "Calculate" to see the total working hours.</li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-semibold flex items-center justify-center mt-0.5">3</span>
+                <span>Copy the swipe data from the &quot;Swipe In/Out&quot; section.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-semibold flex items-center justify-center mt-0.5">4</span>
+                <span>Paste the data in the text area above.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-semibold flex items-center justify-center mt-0.5">5</span>
+                <span>If one OUT time is missing, choose Default, Current, or Custom time from the dropdown to provide it.</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-semibold flex items-center justify-center mt-0.5">6</span>
+                <span>Click &quot;Calculate&quot; to see the total working hours.</span>
+              </li>
             </ol>
           </div>
         </div>
@@ -364,17 +510,25 @@ export default function Home() {
 
       {/* Video Modal */}
       {showVideoModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-4 max-w-2xl w-full relative">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowVideoModal(false)}
+        >
+          <div
+            className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-[var(--shadow-lg)] max-w-4xl w-full relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
-              className="absolute top-0 right-1 text-gray-600 hover:text-black font-bold"
+              className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors"
               onClick={() => setShowVideoModal(false)}
             >
-              ✕
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
             <div className="w-full aspect-video">
               <iframe
-                className="w-full h-full rounded-lg"
+                className="w-full h-full"
                 src="/assets/tutorial.mp4"
                 title="Working Hours Guide"
                 frameBorder="0"
