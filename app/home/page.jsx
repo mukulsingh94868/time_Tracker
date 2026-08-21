@@ -195,10 +195,133 @@ export default function Home() {
   const isWorkingHoursShort = remainingBreakSeconds < 0;
   const remainingBreakHM = splitHoursMinutes(Math.abs(remainingBreakSeconds));
 
+  const inputForm = (
+    <>
+      {/* Title Section */}
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
+          Calculate Working Hours
+        </h1>
+        <p className="mt-2 text-[var(--text-secondary)] max-w-lg mx-auto">
+          Paste your swipe logs below to calculate your effective working hours and breaks.
+        </p>
+      </div>
+
+      {/* Input Card */}
+      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-[var(--shadow)] overflow-hidden">
+        <div className="p-5 sm:p-6">
+          {/* Textarea */}
+          <div className="mb-5">
+            <label
+              htmlFor="swipe-data"
+              className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2"
+            >
+              Swipe Data Logs
+            </label>
+            <div className="relative">
+              <textarea
+                ref={textareaRef}
+                id="swipe-data"
+                className="w-full h-56 p-3.5 pr-12 text-sm leading-relaxed font-mono rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] resize-none transition-all"
+                value={inputData}
+                onChange={(e) => setInputData(e.target.value)}
+                placeholder={"Paste your swipe logs here...\n\nExample:\nIN\n09:00:15 am\nOUT\n01:00:30 pm\nIN\n01:45:00 pm"}
+              />
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                title="Paste from clipboard"
+                className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
+              >
+                <Clipboard className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* OUT Time Source */}
+          <div className="mb-5">
+            <label
+              htmlFor="endTimeMode"
+              className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2"
+            >
+              Out Time Source
+            </label>
+            <select
+              id="endTimeMode"
+              value={endTimeMode}
+              onChange={(e) => {
+                const mode = e.target.value;
+                setEndTimeMode(mode);
+                if (mode === "current") setCurrentEndTime(getCurrentTimeStr());
+              }}
+              className="w-full sm:w-72 px-3.5 py-2.5 text-sm rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-primary)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] transition-all appearance-none cursor-pointer"
+              style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b93a7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
+            >
+              <option value="default">Default Time (6:30 PM)</option>
+              <option value="current">Current Time</option>
+              <option value="custom">Custom Time</option>
+            </select>
+          </div>
+
+          {/* Current Time Row */}
+          {endTimeMode === "current" && (
+            <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-lg bg-[var(--input-bg)] border border-[var(--card-border)]">
+              <span className="text-sm font-medium text-[var(--text-secondary)]">
+                Current OUT Time
+              </span>
+              <span className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">
+                {formatClock(currentEndTime)}
+              </span>
+              <button
+                type="button"
+                onClick={() => setCurrentEndTime(getCurrentTimeStr())}
+                className="sm:ml-auto text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-hover)] px-3 py-1.5 rounded-md hover:bg-[var(--primary-light)] transition-colors"
+              >
+                Refresh
+              </button>
+            </div>
+          )}
+
+          {/* Custom Time Row */}
+          {endTimeMode === "custom" && (
+            <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-lg bg-[var(--input-bg)] border border-[var(--card-border)]">
+              <label
+                htmlFor="customEndTime"
+                className="text-sm font-medium text-[var(--text-secondary)]"
+              >
+                Custom OUT Time
+              </label>
+              <input
+                id="customEndTime"
+                type="time"
+                value={customEndTime}
+                onChange={(e) => setCustomEndTime(e.target.value)}
+                className="px-3.5 py-2 text-sm rounded-lg border border-[var(--input-border)] bg-[var(--card-bg)] text-[var(--text-primary)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] transition-all"
+              />
+            </div>
+          )}
+
+          {/* Calculate Button */}
+          <button
+            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-2.5 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98]"
+            onClick={handleCalculate}
+          >
+            <Calculator className="w-4 h-4" />
+            Calculate
+          </button>
+
+          {!breakInfo && output && (
+            <p className="mt-4 text-sm text-red-400">{output}</p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="h-screen flex flex-col overflow-hidden bg-[var(--background)]">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-[var(--card-border)] bg-[var(--header-bg)]/90 backdrop-blur-md">
+      <header className="shrink-0 border-b border-[var(--card-border)] bg-[var(--header-bg)]/90 backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center">
@@ -228,250 +351,144 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Title Section */}
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] tracking-tight">
-            Calculate Working Hours
-          </h1>
-          <p className="mt-2 text-[var(--text-secondary)] max-w-lg mx-auto">
-            Paste your swipe logs below to calculate your effective working hours and breaks.
-          </p>
-        </div>
-
-        {/* Input Card */}
-        <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl shadow-[var(--shadow)] overflow-hidden">
-          <div className="p-5 sm:p-6">
-            {/* Textarea */}
-            <div className="mb-5">
-              <label
-                htmlFor="swipe-data"
-                className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2"
-              >
-                Swipe Data Logs
-              </label>
-              <div className="relative">
-                <textarea
-                  ref={textareaRef}
-                  id="swipe-data"
-                  className="w-full h-56 p-3.5 pr-12 text-sm leading-relaxed font-mono rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] resize-none transition-all"
-                  value={inputData}
-                  onChange={(e) => setInputData(e.target.value)}
-                  placeholder={"Paste your swipe logs here...\n\nExample:\nIN\n09:00:15 am\nOUT\n01:00:30 pm\nIN\n01:45:00 pm"}
-                />
-                <button
-                  type="button"
-                  onClick={handlePasteFromClipboard}
-                  title="Paste from clipboard"
-                  className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-colors"
-                >
-                  <Clipboard className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* OUT Time Source */}
-            <div className="mb-5">
-              <label
-                htmlFor="endTimeMode"
-                className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2"
-              >
-                Out Time Source
-              </label>
-              <select
-                id="endTimeMode"
-                value={endTimeMode}
-                onChange={(e) => {
-                  const mode = e.target.value;
-                  setEndTimeMode(mode);
-                  if (mode === "current") setCurrentEndTime(getCurrentTimeStr());
-                }}
-                className="w-full sm:w-72 px-3.5 py-2.5 text-sm rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-primary)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] transition-all appearance-none cursor-pointer"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%238b93a7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em', paddingRight: '2.5rem' }}
-              >
-                <option value="default">Default Time (6:30 PM)</option>
-                <option value="current">Current Time</option>
-                <option value="custom">Custom Time</option>
-              </select>
-            </div>
-
-            {/* Current Time Row */}
-            {endTimeMode === "current" && (
-              <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-lg bg-[var(--input-bg)] border border-[var(--card-border)]">
-                <span className="text-sm font-medium text-[var(--text-secondary)]">
-                  Current OUT Time
-                </span>
-                <span className="text-sm font-semibold text-[var(--text-primary)] tabular-nums">
-                  {formatClock(currentEndTime)}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setCurrentEndTime(getCurrentTimeStr())}
-                  className="sm:ml-auto text-sm font-medium text-[var(--primary)] hover:text-[var(--primary-hover)] px-3 py-1.5 rounded-md hover:bg-[var(--primary-light)] transition-colors"
-                >
-                  Refresh
-                </button>
-              </div>
-            )}
-
-            {/* Custom Time Row */}
-            {endTimeMode === "custom" && (
-              <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-lg bg-[var(--input-bg)] border border-[var(--card-border)]">
-                <label
-                  htmlFor="customEndTime"
-                  className="text-sm font-medium text-[var(--text-secondary)]"
-                >
-                  Custom OUT Time
-                </label>
-                <input
-                  id="customEndTime"
-                  type="time"
-                  value={customEndTime}
-                  onChange={(e) => setCustomEndTime(e.target.value)}
-                  className="px-3.5 py-2 text-sm rounded-lg border border-[var(--input-border)] bg-[var(--card-bg)] text-[var(--text-primary)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] transition-all"
-                />
-              </div>
-            )}
-
-            {/* Calculate Button */}
-            <button
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-2.5 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-sm font-semibold rounded-lg shadow-sm transition-all active:scale-[0.98]"
-              onClick={handleCalculate}
-            >
-              <Calculator className="w-4 h-4" />
-              Calculate
-            </button>
-
-            {!breakInfo && output && (
-              <p className="mt-4 text-sm text-red-400">{output}</p>
-            )}
+      <main className="flex-1 min-h-0 overflow-hidden">
+        {!breakInfo ? (
+          <div className="h-full overflow-y-auto flex items-center justify-center px-4 sm:px-6 lg:px-8">
+            <div className="w-full max-w-xl py-8">{inputForm}</div>
           </div>
-        </div>
+        ) : (
+          <div className="h-full flex flex-col lg:flex-row overflow-hidden">
+            {/* Left: Input */}
+            <div className="lg:w-1/2 h-full overflow-y-auto px-4 sm:px-6 lg:px-8 py-8 border-b lg:border-b-0 lg:border-r border-[var(--card-border)]">
+              <div className="max-w-xl mx-auto">{inputForm}</div>
+            </div>
 
-        {/* Results Section */}
-        {breakInfo && (
-          <div className="mt-6 space-y-6">
-            {/* Summary Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-5 rounded-xl bg-[var(--success-bg)] border-2 border-[var(--success-border)]">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-md bg-[var(--success-bg)] flex items-center justify-center">
-                    <Clock className="w-4 h-4 text-[var(--success)]" />
+            {/* Right: Results */}
+            <div className="lg:w-1/2 h-full overflow-hidden px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
+              <div className="max-w-xl w-full mx-auto flex flex-col flex-1 min-h-0 gap-6">
+                {/* Summary Stats */}
+                <div className="shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-5 rounded-xl bg-[var(--success-bg)] border-2 border-[var(--success-border)]">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 rounded-md bg-[var(--success-bg)] flex items-center justify-center">
+                        <Clock className="w-4 h-4 text-[var(--success)]" />
+                      </div>
+                      <span className="text-sm font-semibold uppercase tracking-wide text-[var(--success)]">Total Working Hours</span>
+                    </div>
+                    <div className="flex items-baseline font-mono tabular-nums">
+                      <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.h}</span>
+                      <span className="text-sm font-semibold text-[var(--success)] ml-1 mr-3">hr</span>
+                      <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.m}</span>
+                      <span className="text-sm font-semibold text-[var(--success)] ml-1">min</span>
+                    </div>
                   </div>
-                  <span className="text-sm font-semibold uppercase tracking-wide text-[var(--success)]">Total Working Hours</span>
-                </div>
-                <div className="flex items-baseline font-mono tabular-nums">
-                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.h}</span>
-                  <span className="text-sm font-semibold text-[var(--success)] ml-1 mr-3">hr</span>
-                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{workingHM.m}</span>
-                  <span className="text-sm font-semibold text-[var(--success)] ml-1">min</span>
-                </div>
-              </div>
-              <div className="p-5 rounded-xl bg-[var(--warning-bg)] border-2 border-[var(--warning-border)]">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-md bg-[var(--warning-bg)] flex items-center justify-center">
-                    <Coffee className="w-4 h-4 text-[var(--warning)]" />
+                  <div className="p-5 rounded-xl bg-[var(--warning-bg)] border-2 border-[var(--warning-border)]">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-7 h-7 rounded-md bg-[var(--warning-bg)] flex items-center justify-center">
+                        <Coffee className="w-4 h-4 text-[var(--warning)]" />
+                      </div>
+                      <span className="text-sm font-semibold uppercase tracking-wide text-[var(--warning)]">Total Break Time</span>
+                    </div>
+                    <div className="flex items-baseline font-mono tabular-nums">
+                      <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.h}</span>
+                      <span className="text-sm font-semibold text-[var(--warning)] ml-1 mr-3">hr</span>
+                      <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.m}</span>
+                      <span className="text-sm font-semibold text-[var(--warning)] ml-1">min</span>
+                    </div>
                   </div>
-                  <span className="text-sm font-semibold uppercase tracking-wide text-[var(--warning)]">Total Break Time</span>
-                </div>
-                <div className="flex items-baseline font-mono tabular-nums">
-                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.h}</span>
-                  <span className="text-sm font-semibold text-[var(--warning)] ml-1 mr-3">hr</span>
-                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{breakHM.m}</span>
-                  <span className="text-sm font-semibold text-[var(--warning)] ml-1">min</span>
-                </div>
-              </div>
-              <div
-                className={`p-5 rounded-xl border-2 ${
-                  isWorkingHoursShort
-                    ? "bg-[var(--danger-bg)] border-[var(--danger-border)]"
-                    : "bg-[var(--info-bg)] border-[var(--info-border)]"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-3">
                   <div
-                    className={`w-7 h-7 rounded-md flex items-center justify-center ${
-                      isWorkingHoursShort ? "bg-[var(--danger-bg)]" : "bg-[var(--info-bg)]"
+                    className={`p-5 rounded-xl border-2 sm:col-span-2 ${
+                      isWorkingHoursShort
+                        ? "bg-[var(--danger-bg)] border-[var(--danger-border)]"
+                        : "bg-[var(--info-bg)] border-[var(--info-border)]"
                     }`}
                   >
-                    <Hourglass className={`w-4 h-4 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`} />
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className={`w-7 h-7 rounded-md flex items-center justify-center ${
+                          isWorkingHoursShort ? "bg-[var(--danger-bg)]" : "bg-[var(--info-bg)]"
+                        }`}
+                      >
+                        <Hourglass className={`w-4 h-4 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`} />
+                      </div>
+                      <span
+                        className={`text-sm font-semibold uppercase tracking-wide ${
+                          isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"
+                        }`}
+                      >
+                        Remaining Break Time
+                      </span>
+                    </div>
+                    <div className="flex items-baseline font-mono tabular-nums">
+                      {isWorkingHoursShort && (
+                        <span className="text-3xl sm:text-4xl font-bold text-[var(--danger)] mr-0.5">-</span>
+                      )}
+                      <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{remainingBreakHM.h}</span>
+                      <span className={`text-sm font-semibold ml-1 mr-3 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`}>hr</span>
+                      <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{remainingBreakHM.m}</span>
+                      <span className={`text-sm font-semibold ml-1 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`}>min</span>
+                    </div>
+                    <p className="mt-2 text-xs text-[var(--text-muted)]">Working time beyond 8h</p>
+                    {isWorkingHoursShort && (
+                      <p className="mt-3 text-sm font-medium text-[var(--danger)]">
+                        You need to work {remainingBreakHM.h}h {remainingBreakHM.m}m more to complete your 8h total working hours.
+                      </p>
+                    )}
                   </div>
-                  <span
-                    className={`text-sm font-semibold uppercase tracking-wide ${
-                      isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"
-                    }`}
-                  >
-                    Remaining Break Time
-                  </span>
                 </div>
-                <div className="flex items-baseline font-mono tabular-nums">
-                  {isWorkingHoursShort && (
-                    <span className="text-3xl sm:text-4xl font-bold text-[var(--danger)] mr-0.5">-</span>
-                  )}
-                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{remainingBreakHM.h}</span>
-                  <span className={`text-sm font-semibold ml-1 mr-3 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`}>hr</span>
-                  <span className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">{remainingBreakHM.m}</span>
-                  <span className={`text-sm font-semibold ml-1 ${isWorkingHoursShort ? "text-[var(--danger)]" : "text-[var(--info)]"}`}>min</span>
-                </div>
-                <p className="mt-2 text-xs text-[var(--text-muted)]">Working time beyond 8h</p>
-                {isWorkingHoursShort && (
-                  <p className="mt-3 text-sm font-medium text-[var(--danger)]">
-                    You need to work {remainingBreakHM.h}h {remainingBreakHM.m}m more to complete your 8h total working hours.
-                  </p>
+
+                {/* Break Sessions Table */}
+                {breakInfo.breakSessions.length > 0 && (
+                  <div className="flex-1 min-h-0 flex flex-col bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl overflow-hidden">
+                    <div className="shrink-0 px-5 py-4 border-b border-[var(--card-border)]">
+                      <h3 className="text-base font-semibold text-[var(--text-primary)]">
+                        Break Sessions
+                      </h3>
+                    </div>
+                    <div className="flex-1 min-h-0 overflow-auto">
+                      <table className="w-full text-sm">
+                        <thead className="sticky top-0 bg-[var(--card-bg)] z-10">
+                          <tr className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
+                            <th className="text-left px-5 py-2.5">Session</th>
+                            <th className="text-left px-5 py-2.5">Time Interval</th>
+                            <th className="text-right px-5 py-2.5">Duration</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[var(--card-border)]">
+                          {breakInfo.breakSessions.map((session, i) => (
+                            <tr
+                              key={i}
+                              className="hover:bg-[var(--surface-hover)] transition-colors"
+                            >
+                              <td className="px-5 py-3 text-[var(--text-primary)] font-medium whitespace-nowrap">
+                                Break {i + 1}
+                              </td>
+                              <td className="px-5 py-3 text-[var(--text-secondary)] font-mono whitespace-nowrap">
+                                {formatClock(session.start)} - {formatClock(session.end)}
+                              </td>
+                              <td className="px-5 py-3 text-right text-[var(--warning)] font-mono font-semibold whitespace-nowrap">
+                                {session.shortLabel}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-
-            {/* Break Sessions Table */}
-            {breakInfo.breakSessions.length > 0 && (
-              <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-[var(--card-border)]">
-                  <h3 className="text-base font-semibold text-[var(--text-primary)]">
-                    Break Sessions
-                  </h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                        <th className="text-left px-5 py-2.5">Session</th>
-                        <th className="text-left px-5 py-2.5">Time Interval</th>
-                        <th className="text-right px-5 py-2.5">Duration</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--card-border)]">
-                      {breakInfo.breakSessions.map((session, i) => (
-                        <tr
-                          key={i}
-                          className="hover:bg-[var(--surface-hover)] transition-colors"
-                        >
-                          <td className="px-5 py-3 text-[var(--text-primary)] font-medium whitespace-nowrap">
-                            Break {i + 1}
-                          </td>
-                          <td className="px-5 py-3 text-[var(--text-secondary)] font-mono whitespace-nowrap">
-                            {formatClock(session.start)} - {formatClock(session.end)}
-                          </td>
-                          <td className="px-5 py-3 text-right text-[var(--warning)] font-mono font-semibold whitespace-nowrap">
-                            {session.shortLabel}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="mt-16 border-t border-[var(--card-border)] bg-[var(--header-bg)]">
-        <div id="developers" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-8">
+      <footer className="shrink-0 border-t border-[var(--card-border)] bg-[var(--header-bg)]">
+        <div id="developers" className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center">
+          <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)] mb-3">
             Meet the Developers
           </h2>
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <div className="inline-flex items-center gap-3 pl-2 pr-6 py-2.5 rounded-full bg-[var(--card-bg)] border border-[var(--card-border)]">
               <span className="w-10 h-10 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-base font-semibold flex items-center justify-center">
                 AB
