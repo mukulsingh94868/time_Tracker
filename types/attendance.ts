@@ -10,6 +10,7 @@ export type EndTimeMode = "default" | "current" | "custom";
 export interface EndTimeModeOption {
   value: EndTimeMode;
   label: string;
+  description: string;
 }
 
 export type SwipePair = [swipeIn: string, swipeOut: string];
@@ -18,6 +19,13 @@ export interface BreakSession {
   start: string;
   end: string;
   shortLabel: string;
+}
+
+export interface DaySegment {
+  kind: "work" | "break";
+  start: string;
+  end: string;
+  seconds: number;
 }
 
 export interface WorkBreakTotals {

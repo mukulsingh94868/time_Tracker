@@ -34,8 +34,9 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 |--------|---------|
 | `components/layout/` | Header, Footer |
 | `components/calculator/` | InputForm, SwipeInput, DayTypeSelector, EndTimeSelector |
-| `components/results/` | ResultsPanel, StatCard, TargetCard, DurationDisplay, BreakSessionsTable |
-| `components/modals/` | Modal (shared shell), GuideModal, VideoModal |
+| `components/results/` | ResultsPanel, ResultsEmptyState, TargetCard, StatCard, DurationDisplay, DayTimeline, BreakSessionsTable |
+| `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing |
+| `components/modals/` | Modal (shared dialog shell with title, Escape, backdrop close), GuideModal, VideoModal |
 | `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime` |
 | `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService` |
 | `utils/` | `time.ts` - pure time conversion and formatting helpers |
@@ -50,6 +51,8 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 - Use TypeScript (`.ts` / `.tsx`) with explicit prop interfaces; shared models live in `types/`
 - Use Tailwind CSS for styling with CSS custom properties for colors
 - Reference colors as `bg-[var(--card-bg)]`, `text-[var(--text-primary)]`, etc.
+- Build UI from `components/ui/` primitives; semantic tone classes live in `constants/theme.ts`
+- Use `motion-safe:` for animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`)
 - Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
 - Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
 - Match existing code style and naming conventions

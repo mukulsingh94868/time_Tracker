@@ -1,7 +1,7 @@
 "use client";
 
-import Modal from "@/components/modals/Modal";
 import type { ReactNode } from "react";
+import Modal from "@/components/modals/Modal";
 
 interface GuideModalProps {
   onClose: () => void;
@@ -9,62 +9,64 @@ interface GuideModalProps {
 
 interface GuideStep {
   id: string;
+  title: string;
   content: ReactNode;
 }
 
 const GUIDE_STEPS: GuideStep[] = [
   {
     id: "login",
+    title: "Log in to GreytHr",
     content: (
       <>
-        <strong className="text-[var(--text-primary)]">Login to GreytHr:</strong>{" "}
+        Open{" "}
         <a
           href="https://hiretek.greythr.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[var(--primary)] hover:underline"
+          className="font-medium text-[var(--primary)] underline-offset-2 hover:underline"
         >
           GreytHr
         </a>{" "}
-        and log in with your credentials.
+        and sign in with your credentials.
       </>
     ),
   },
-  { id: "attendance", content: "Go to attendance section." },
-  { id: "copy", content: 'Copy the swipe data from the "Swipe In/Out" section.' },
-  { id: "paste", content: "Paste the data in the text area above." },
+  { id: "attendance", title: "Open attendance", content: "Go to the attendance section." },
+  { id: "copy", title: "Copy your swipes", content: 'Copy the data from the "Swipe In/Out" section.' },
+  {
+    id: "paste",
+    title: "Paste it here",
+    content: "Paste into the Swipe data box, or use the Paste button.",
+  },
   {
     id: "day-type",
-    content: "Select your Working Day Type: Full Day (8h), Short Leave (6h 30m), or Half Day (4h).",
+    title: "Choose your day type",
+    content: "Full Day (8h), Short Leave (6h 30m) or Half Day (4h).",
   },
   {
     id: "out-time",
-    content:
-      "If you are still in office (last OUT missing), choose Default, Current, or Custom time. Results update automatically.",
+    title: "Set the out time if needed",
+    content: "Still in office? Pick Default (6:30 PM), Now, or a Custom time. Results update automatically.",
   },
 ];
 
 export default function GuideModal({ onClose }: Readonly<GuideModalProps>) {
   return (
-    <Modal
-      title="How to Use"
-      onClose={onClose}
-      panelClassName="max-w-xl p-6"
-      closeButtonClassName="top-4 right-4 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)]"
-    >
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-1">
-        How to Use
-      </h3>
-      <p className="text-sm text-[var(--text-secondary)] mb-5">
-        Follow these steps to calculate your working hours.
-      </p>
-      <ol className="space-y-3 text-sm text-[var(--text-secondary)]">
-        {GUIDE_STEPS.map(({ id, content }, i) => (
-          <li key={id} className="flex gap-3">
-            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-xs font-semibold flex items-center justify-center mt-0.5">
+    <Modal title="How to use" description="Follow these steps to calculate your working hours." onClose={onClose}>
+      <ol className="px-6 py-5">
+        {GUIDE_STEPS.map(({ id, title, content }, i) => (
+          <li key={id} className="relative flex gap-4 pb-5 last:pb-0">
+            {i < GUIDE_STEPS.length - 1 && (
+              <span className="absolute bottom-0 left-[13px] top-8 w-px bg-[var(--card-border)]" aria-hidden="true" />
+            )}
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[var(--primary-border)] bg-[var(--primary-light)] text-xs font-semibold text-[var(--primary)]">
               {i + 1}
             </span>
-            <span>{content}</span>
+            <div className="pt-0.5">
+              <p className="text-sm font-medium text-[var(--text-primary)]">{title}</p>
+              <p className="mt-0.5 text-sm text-[var(--text-secondary)]">{content}</p>
+            </div>
           </li>
         ))}
       </ol>

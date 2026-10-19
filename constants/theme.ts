@@ -1,28 +1,39 @@
 import type { Tone, ToneClassSet } from "@/types/theme";
 
 export const TONE_CLASSES: Record<Tone, ToneClassSet> = {
+  primary: {
+    soft: "bg-[var(--primary-light)]",
+    border: "border-[var(--primary-border)]",
+    text: "text-[var(--primary)]",
+    solid: "bg-[var(--primary)]",
+    stroke: "stroke-[var(--primary)]",
+  },
   success: {
-    card: "bg-[var(--success-bg)] border-[var(--success-border)]",
-    iconBg: "bg-[var(--success-bg)]",
+    soft: "bg-[var(--success-bg)]",
+    border: "border-[var(--success-border)]",
     text: "text-[var(--success)]",
-    bar: "bg-[var(--success)]",
+    solid: "bg-[var(--success)]",
+    stroke: "stroke-[var(--success)]",
   },
   warning: {
-    card: "bg-[var(--warning-bg)] border-[var(--warning-border)]",
-    iconBg: "bg-[var(--warning-bg)]",
+    soft: "bg-[var(--warning-bg)]",
+    border: "border-[var(--warning-border)]",
     text: "text-[var(--warning)]",
-    bar: "bg-[var(--warning)]",
+    solid: "bg-[var(--warning)]",
+    stroke: "stroke-[var(--warning)]",
   },
   info: {
-    card: "bg-[var(--info-bg)] border-[var(--info-border)]",
-    iconBg: "bg-[var(--info-bg)]",
+    soft: "bg-[var(--info-bg)]",
+    border: "border-[var(--info-border)]",
     text: "text-[var(--info)]",
-    bar: "bg-[var(--info)]",
+    solid: "bg-[var(--info)]",
+    stroke: "stroke-[var(--info)]",
   },
   danger: {
-    card: "bg-[var(--danger-bg)] border-[var(--danger-border)]",
-    iconBg: "bg-[var(--danger-bg)]",
+    soft: "bg-[var(--danger-bg)]",
+    border: "border-[var(--danger-border)]",
     text: "text-[var(--danger)]",
-    bar: "bg-[var(--danger)]",
+    solid: "bg-[var(--danger)]",
+    stroke: "stroke-[var(--danger)]",
   },
 };

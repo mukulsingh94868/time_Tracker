@@ -13,9 +13,9 @@ export const DEFAULT_DAY_TYPE: DayTypeKey = "full";
 export const DEFAULT_END_TIME = "18:30:00";
 
 export const END_TIME_MODES: EndTimeModeOption[] = [
-  { value: "default", label: "Default Time (6:30 PM)" },
-  { value: "current", label: "Current Time" },
-  { value: "custom", label: "Custom Time" },
+  { value: "default", label: "Default", description: "6:30 PM" },
+  { value: "current", label: "Now", description: "Live time" },
+  { value: "custom", label: "Custom", description: "Pick a time" },
 ];
 
 export const NO_SWIPES_ERROR = "No swipe times found. Please paste the swipe data copied from GreytHr.";
