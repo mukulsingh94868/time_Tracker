@@ -12,7 +12,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 |-------|-----------|
 | Framework | Next.js 15.1.6 (App Router) |
 | UI | React 19 |
-| Language | JavaScript (JSX) - NO TypeScript |
+| Language | TypeScript (strict) |
 | Styling | Tailwind CSS 3.4 + CSS Custom Properties |
 | Icons | lucide-react |
 | Fonts | Geist Sans + Geist Mono (next/font/google) |
@@ -22,30 +22,43 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 
 ## Codebase Facts
 
-- **1 functional page**: `app/home/page.jsx` (587 lines, monolithic)
-- **1 redirect page**: `app/page.jsx` (redirects `/` to `/home`)
+- **1 functional page**: `app/home/page.tsx` (composes components, no business logic)
+- **1 redirect page**: `app/page.tsx` (redirects `/` to `/home`)
 - **0 backend files** - no API routes, no server actions
 - **0 test files** - no testing framework
-- **0 separate components** - everything is in one file
-- **Empty `context/` directory** - intended for React Context but unused
-- **Empty `.claude/` directory** - intended for AI context
+- **`context/` directory** - project documentation (markdown), not React Context
+
+## Folder Structure
+
+| Folder | Purpose |
+|--------|---------|
+| `components/layout/` | Header, Footer |
+| `components/calculator/` | InputForm, SwipeInput, DayTypeSelector, EndTimeSelector |
+| `components/results/` | ResultsPanel, StatCard, TargetCard, DurationDisplay, BreakSessionsTable |
+| `components/modals/` | Modal (shared shell), GuideModal, VideoModal |
+| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime` |
+| `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService` |
+| `utils/` | `time.ts` - pure time conversion and formatting helpers |
+| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps) |
+| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones) |
 
 ## Rules for Agents
 
 ### DO
 
 - Use `"use client"` directive for all client components
-- Use JavaScript (JSX), never TypeScript
+- Use TypeScript (`.ts` / `.tsx`) with explicit prop interfaces; shared models live in `types/`
 - Use Tailwind CSS for styling with CSS custom properties for colors
 - Reference colors as `bg-[var(--card-bg)]`, `text-[var(--text-primary)]`, etc.
-- Keep the monolithic component pattern unless explicitly asked to refactor
+- Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
+- Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
 - Match existing code style and naming conventions
-- Run `npm run lint` after code changes
+- Run `npm run typecheck` and `npm run lint` after code changes
 - Run `npm run build` to verify the build succeeds
 
 ### DO NOT
 
-- Add TypeScript or type annotations
+- Use `any`, `@ts-ignore`, or loosen `strict` in `tsconfig.json`
 - Add backend code, API routes, or database connections
 - Add external state management libraries (Redux, Zustand, etc.)
 - Add authentication or user management
@@ -59,22 +72,23 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 
 | File | Purpose |
 |------|---------|
-| `app/home/page.jsx` | The entire application (UI + logic) |
-| `app/layout.jsx` | Root layout, fonts, metadata |
+| `app/home/page.tsx` | Page composition (layout + modals) |
+| `hooks/useAttendanceCalculator.ts` | Calculator state and derived results |
+| `services/attendanceService.ts` | Working hours, breaks, target completion |
+| `app/layout.tsx` | Root layout, fonts, metadata |
 | `app/globals.css` | Dark theme CSS variables, global styles |
-| `app/page.jsx` | Redirect from `/` to `/home` |
-| `next.config.mjs` | Static export config |
-| `tailwind.config.mjs` | Tailwind configuration |
+| `app/page.tsx` | Redirect from `/` to `/home` |
+| `next.config.ts` | Static export config |
+| `tailwind.config.ts` | Tailwind configuration |
 | `package.json` | Dependencies and scripts |
 
 ## Core Logic
 
 The app parses GreytHr swipe data by:
-1. Finding lines starting with "IN" or "OUT"
-2. Reading the next line for timestamp (`HH:MM:SS am/pm`)
-3. Converting to 24-hour format
-4. Pairing into [IN, OUT] tuples
-5. Calculating working hours, break times, and remaining time
+1. Extracting every timestamp in the text (IN/OUT keywords are ignored)
+2. Converting to 24-hour format and sorting chronologically
+3. Pairing sequentially into [IN, OUT] tuples (odd count closes with the selected out time)
+4. Calculating working hours, break times, and remaining time against the day type (Full 8h, Short Leave 6.5h, Half 4h)
 
 ## Color System
 
@@ -90,5 +104,6 @@ All colors are CSS custom properties in `globals.css`:
 npm run dev      # Start development server
 npm run build    # Build static export
 npm run lint     # Run ESLint
+npm run typecheck # Run tsc --noEmit (strict)
 npm run start    # Start production server
 ```
