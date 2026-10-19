@@ -1,4 +1,6 @@
-export const TONE_CLASSES = {
+import type { Tone, ToneClassSet } from "@/types/theme";
+
+export const TONE_CLASSES: Record<Tone, ToneClassSet> = {
   success: {
     card: "bg-[var(--success-bg)] border-[var(--success-border)]",
     iconBg: "bg-[var(--success-bg)]",

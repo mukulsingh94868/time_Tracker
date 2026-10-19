@@ -1,8 +1,20 @@
 "use client";
 
+import type { ReactNode } from "react";
+import type { LucideIcon } from "lucide-react";
 import { TONE_CLASSES } from "@/constants/theme";
+import type { Tone } from "@/types/theme";
 
-export default function StatCard({ icon: Icon, title, tone, badge, className = "", children }) {
+interface StatCardProps {
+  icon: LucideIcon;
+  title: string;
+  tone: Tone;
+  badge?: string;
+  className?: string;
+  children: ReactNode;
+}
+
+export default function StatCard({ icon: Icon, title, tone, badge, className = "", children }: Readonly<StatCardProps>) {
   const toneClasses = TONE_CLASSES[tone];
 
   return (

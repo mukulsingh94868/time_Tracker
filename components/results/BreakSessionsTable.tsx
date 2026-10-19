@@ -1,8 +1,13 @@
 "use client";
 
 import { formatClock } from "@/utils/time";
+import type { BreakSession } from "@/types/attendance";
 
-export default function BreakSessionsTable({ sessions }) {
+interface BreakSessionsTableProps {
+  sessions: BreakSession[];
+}
+
+export default function BreakSessionsTable({ sessions }: Readonly<BreakSessionsTableProps>) {
   return (
     <div className="flex-1 min-h-0 flex flex-col bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl overflow-hidden">
       <div className="shrink-0 px-5 py-4 border-b border-[var(--card-border)]">

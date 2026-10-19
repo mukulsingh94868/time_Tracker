@@ -2,7 +2,11 @@
 
 import Modal from "@/components/modals/Modal";
 
-export default function VideoModal({ onClose }) {
+interface VideoModalProps {
+  onClose: () => void;
+}
+
+export default function VideoModal({ onClose }: Readonly<VideoModalProps>) {
   return (
     <Modal
       onClose={onClose}

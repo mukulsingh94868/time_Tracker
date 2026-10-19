@@ -7,8 +7,13 @@ import { readClipboardText } from "@/services/clipboardService";
 const ACTION_BUTTON_CLASS =
   "w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors";
 
-export default function SwipeInput({ value, onChange }) {
-  const textareaRef = useRef(null);
+interface SwipeInputProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+export default function SwipeInput({ value, onChange }: Readonly<SwipeInputProps>) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     textareaRef.current?.focus();

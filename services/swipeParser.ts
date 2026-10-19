@@ -1,9 +1,10 @@
 import { pad } from "@/utils/time";
+import type { SwipePair } from "@/types/attendance";
 
 const TIME_REGEX = /\b(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(am|pm)?\b/gi;
 
-export const parseSwipeTimes = (data) => {
-  const times = [];
+export const parseSwipeTimes = (data: string): string[] => {
+  const times: string[] = [];
 
   for (const [, h, m, s = "0", period] of data.matchAll(TIME_REGEX)) {
     let hours = Number(h);
@@ -20,10 +21,10 @@ export const parseSwipeTimes = (data) => {
   return times.sort();
 };
 
-export const pairSwipes = (times) =>
-  times.reduce((acc, _, i, arr) => {
-    if (i % 2 === 0 && arr[i + 1]) {
-      acc.push([arr[i], arr[i + 1]]);
-    }
-    return acc;
-  }, []);
+export const pairSwipes = (times: string[]): SwipePair[] => {
+  const pairs: SwipePair[] = [];
+  for (let i = 0; i + 1 < times.length; i += 2) {
+    pairs.push([times[i], times[i + 1]]);
+  }
+  return pairs;
+};

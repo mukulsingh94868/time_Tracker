@@ -5,7 +5,12 @@ import { MonitorPlay, NotepadText } from "lucide-react";
 const ICON_BUTTON_CLASS =
   "w-9 h-9 flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-hover)] rounded-lg transition-colors";
 
-export default function Header({ onOpenGuide, onOpenVideo }) {
+interface HeaderProps {
+  onOpenGuide: () => void;
+  onOpenVideo: () => void;
+}
+
+export default function Header({ onOpenGuide, onOpenVideo }: Readonly<HeaderProps>) {
   return (
     <header className="shrink-0 border-b border-[var(--card-border)] bg-[var(--header-bg)]/90 backdrop-blur-md">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">

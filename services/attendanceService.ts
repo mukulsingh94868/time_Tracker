@@ -1,10 +1,11 @@
 import { parseSwipeTimes, pairSwipes } from "@/services/swipeParser";
 import { toSeconds, formatDurationCompact } from "@/utils/time";
+import type { Attendance, BreakSession, SwipePair, TargetSummary, WorkBreakTotals } from "@/types/attendance";
 
-export const calculateWorkingHoursAndBreaks = (swipes) => {
+export const calculateWorkingHoursAndBreaks = (swipes: SwipePair[]): WorkBreakTotals => {
   let workingSeconds = 0;
   let breakSeconds = 0;
-  const breakSessions = [];
+  const breakSessions: BreakSession[] = [];
 
   swipes.forEach(([swipeIn, swipeOut], index) => {
     workingSeconds += toSeconds(swipeOut) - toSeconds(swipeIn);
@@ -26,7 +27,7 @@ export const calculateWorkingHoursAndBreaks = (swipes) => {
   return { workingSeconds, breakSeconds, breakSessions };
 };
 
-export const calculateAttendance = (data, endTime) => {
+export const calculateAttendance = (data: string, endTime: string): Attendance | null => {
   const times = parseSwipeTimes(data);
   if (times.length === 0) return null;
 
@@ -37,7 +38,7 @@ export const calculateAttendance = (data, endTime) => {
   return { ...calculateWorkingHoursAndBreaks(swipes), swipes, isSessionOpen };
 };
 
-export const getTargetCompletionSeconds = (attendance, requiredSeconds) => {
+export const getTargetCompletionSeconds = (attendance: Attendance, requiredSeconds: number): number | null => {
   let cumulative = 0;
   for (const [swipeIn, swipeOut] of attendance.swipes) {
     const start = toSeconds(swipeIn);
@@ -45,12 +46,13 @@ export const getTargetCompletionSeconds = (attendance, requiredSeconds) => {
     if (cumulative + duration >= requiredSeconds) return start + (requiredSeconds - cumulative);
     cumulative += duration;
   }
-  if (!attendance.isSessionOpen) return null;
-  const lastOut = attendance.swipes[attendance.swipes.length - 1][1];
-  return toSeconds(lastOut) + (requiredSeconds - cumulative);
+
+  const lastPair = attendance.swipes[attendance.swipes.length - 1];
+  if (!attendance.isSessionOpen || !lastPair) return null;
+  return toSeconds(lastPair[1]) + (requiredSeconds - cumulative);
 };
 
-export const getTargetSummary = (attendance, requiredSeconds) => {
+export const getTargetSummary = (attendance: Attendance, requiredSeconds: number): TargetSummary => {
   const remainingSeconds = attendance.workingSeconds - requiredSeconds;
   return {
     requiredSeconds,

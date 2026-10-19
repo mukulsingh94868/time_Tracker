@@ -1,8 +1,13 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Modal from "@/components/modals/Modal";
 
-const GUIDE_STEPS = [
+interface GuideModalProps {
+  onClose: () => void;
+}
+
+const GUIDE_STEPS: ReactNode[] = [
   <>
     <strong className="text-[var(--text-primary)]">Login to GreytHr:</strong>{" "}
     <a href="https://hiretek.greythr.com/" target="blank" className="text-[var(--primary)] hover:underline">
@@ -17,7 +22,7 @@ const GUIDE_STEPS = [
   "If you are still in office (last OUT missing), choose Default, Current, or Custom time. Results update automatically.",
 ];
 
-export default function GuideModal({ onClose }) {
+export default function GuideModal({ onClose }: Readonly<GuideModalProps>) {
   return (
     <Modal
       onClose={onClose}

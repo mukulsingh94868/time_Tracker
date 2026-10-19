@@ -1,8 +1,16 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { X } from "lucide-react";
 
-export default function Modal({ onClose, panelClassName, closeButtonClassName, children }) {
+interface ModalProps {
+  onClose: () => void;
+  panelClassName: string;
+  closeButtonClassName: string;
+  children: ReactNode;
+}
+
+export default function Modal({ onClose, panelClassName, closeButtonClassName, children }: Readonly<ModalProps>) {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
       <div

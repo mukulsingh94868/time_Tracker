@@ -1,6 +1,11 @@
 "use client";
 
-const DEVELOPERS = [
+interface Developer {
+  initials: string;
+  name: string;
+}
+
+const DEVELOPERS: Developer[] = [
   { initials: "AB", name: "Aakash Burman" },
   { initials: "MS", name: "Mukul Singh" },
 ];

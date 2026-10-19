@@ -6,10 +6,18 @@ import DurationDisplay from "@/components/results/DurationDisplay";
 import { DAY_TYPES } from "@/constants/attendance";
 import { TONE_CLASSES } from "@/constants/theme";
 import { formatClock, formatHoursLabel, fromSeconds, splitHoursMinutes } from "@/utils/time";
+import type { DayTypeKey, TargetSummary } from "@/types/attendance";
+import type { Tone } from "@/types/theme";
 
-export default function TargetCard({ summary, workingSeconds, dayType }) {
+interface TargetCardProps {
+  summary: TargetSummary;
+  workingSeconds: number;
+  dayType: DayTypeKey;
+}
+
+export default function TargetCard({ summary, workingSeconds, dayType }: Readonly<TargetCardProps>) {
   const { requiredSeconds, remainingSeconds, isShort, progressPercent, completionSeconds } = summary;
-  const tone = isShort ? "danger" : "info";
+  const tone: Tone = isShort ? "danger" : "info";
   const dayLabel = DAY_TYPES[dayType].label;
   const requiredLabel = formatHoursLabel(requiredSeconds);
   const workingHM = splitHoursMinutes(workingSeconds);

@@ -2,8 +2,15 @@
 
 import { TONE_CLASSES } from "@/constants/theme";
 import { splitHoursMinutes } from "@/utils/time";
+import type { Tone } from "@/types/theme";
 
-export default function DurationDisplay({ seconds, tone, isNegative = false }) {
+interface DurationDisplayProps {
+  seconds: number;
+  tone: Tone;
+  isNegative?: boolean;
+}
+
+export default function DurationDisplay({ seconds, tone, isNegative = false }: Readonly<DurationDisplayProps>) {
   const { h, m } = splitHoursMinutes(Math.abs(seconds));
   const unitClass = `text-sm font-semibold ${TONE_CLASSES[tone].text}`;
 

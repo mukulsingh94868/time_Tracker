@@ -3,8 +3,13 @@
 import SwipeInput from "@/components/calculator/SwipeInput";
 import DayTypeSelector from "@/components/calculator/DayTypeSelector";
 import EndTimeSelector from "@/components/calculator/EndTimeSelector";
+import type { AttendanceCalculator } from "@/types/attendance";
 
-export default function InputForm({ calculator }) {
+interface InputFormProps {
+  calculator: AttendanceCalculator;
+}
+
+export default function InputForm({ calculator }: Readonly<InputFormProps>) {
   const {
     inputData,
     setInputData,

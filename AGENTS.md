@@ -12,7 +12,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 |-------|-----------|
 | Framework | Next.js 15.1.6 (App Router) |
 | UI | React 19 |
-| Language | JavaScript (JSX) - NO TypeScript |
+| Language | TypeScript (strict) |
 | Styling | Tailwind CSS 3.4 + CSS Custom Properties |
 | Icons | lucide-react |
 | Fonts | Geist Sans + Geist Mono (next/font/google) |
@@ -22,8 +22,8 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 
 ## Codebase Facts
 
-- **1 functional page**: `app/home/page.jsx` (composes components, no business logic)
-- **1 redirect page**: `app/page.jsx` (redirects `/` to `/home`)
+- **1 functional page**: `app/home/page.tsx` (composes components, no business logic)
+- **1 redirect page**: `app/page.tsx` (redirects `/` to `/home`)
 - **0 backend files** - no API routes, no server actions
 - **0 test files** - no testing framework
 - **`context/` directory** - project documentation (markdown), not React Context
@@ -38,26 +38,27 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 | `components/modals/` | Modal (shared shell), GuideModal, VideoModal |
 | `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime` |
 | `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService` |
-| `utils/` | `time.js` - pure time conversion and formatting helpers |
-| `constants/` | `attendance.js` (day types, end-time modes), `theme.js` (tone class maps) |
+| `utils/` | `time.ts` - pure time conversion and formatting helpers |
+| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps) |
+| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones) |
 
 ## Rules for Agents
 
 ### DO
 
 - Use `"use client"` directive for all client components
-- Use JavaScript (JSX), never TypeScript
+- Use TypeScript (`.ts` / `.tsx`) with explicit prop interfaces; shared models live in `types/`
 - Use Tailwind CSS for styling with CSS custom properties for colors
 - Reference colors as `bg-[var(--card-bg)]`, `text-[var(--text-primary)]`, etc.
 - Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
-- Tailwind class strings in `constants/` are scanned via `tailwind.config.mjs`; keep them as full literals
+- Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
 - Match existing code style and naming conventions
-- Run `npm run lint` after code changes
+- Run `npm run typecheck` and `npm run lint` after code changes
 - Run `npm run build` to verify the build succeeds
 
 ### DO NOT
 
-- Add TypeScript or type annotations
+- Use `any`, `@ts-ignore`, or loosen `strict` in `tsconfig.json`
 - Add backend code, API routes, or database connections
 - Add external state management libraries (Redux, Zustand, etc.)
 - Add authentication or user management
@@ -71,14 +72,14 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 
 | File | Purpose |
 |------|---------|
-| `app/home/page.jsx` | Page composition (layout + modals) |
-| `hooks/useAttendanceCalculator.js` | Calculator state and derived results |
-| `services/attendanceService.js` | Working hours, breaks, target completion |
-| `app/layout.jsx` | Root layout, fonts, metadata |
+| `app/home/page.tsx` | Page composition (layout + modals) |
+| `hooks/useAttendanceCalculator.ts` | Calculator state and derived results |
+| `services/attendanceService.ts` | Working hours, breaks, target completion |
+| `app/layout.tsx` | Root layout, fonts, metadata |
 | `app/globals.css` | Dark theme CSS variables, global styles |
-| `app/page.jsx` | Redirect from `/` to `/home` |
-| `next.config.mjs` | Static export config |
-| `tailwind.config.mjs` | Tailwind configuration |
+| `app/page.tsx` | Redirect from `/` to `/home` |
+| `next.config.ts` | Static export config |
+| `tailwind.config.ts` | Tailwind configuration |
 | `package.json` | Dependencies and scripts |
 
 ## Core Logic
@@ -103,5 +104,6 @@ All colors are CSS custom properties in `globals.css`:
 npm run dev      # Start development server
 npm run build    # Build static export
 npm run lint     # Run ESLint
+npm run typecheck # Run tsc --noEmit (strict)
 npm run start    # Start production server
 ```
