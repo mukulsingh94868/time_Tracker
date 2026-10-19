@@ -46,6 +46,13 @@ export const formatDurationCompact = (totalSecondsRaw: number): string => {
   return `${m}m ${seconds}s`;
 };
 
+export const formatClockShort = (time: string): string => {
+  const [h, m] = parseTimeParts(time);
+  const period = h >= 12 ? "pm" : "am";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${pad(m)} ${period}`;
+};
+
 export const formatClock = (time: string): string => {
   const [h, m, s] = parseTimeParts(time);
   const period = h >= 12 ? "pm" : "am";

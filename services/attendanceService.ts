@@ -1,6 +1,13 @@
 import { parseSwipeTimes, pairSwipes } from "@/services/swipeParser";
 import { toSeconds, formatDurationCompact } from "@/utils/time";
-import type { Attendance, BreakSession, SwipePair, TargetSummary, WorkBreakTotals } from "@/types/attendance";
+import type {
+  Attendance,
+  BreakSession,
+  DaySegment,
+  SwipePair,
+  TargetSummary,
+  WorkBreakTotals,
+} from "@/types/attendance";
 
 export const calculateWorkingHoursAndBreaks = (swipes: SwipePair[]): WorkBreakTotals => {
   let workingSeconds = 0;
@@ -36,6 +43,34 @@ export const calculateAttendance = (data: string, endTime: string): Attendance |
 
   const swipes = pairSwipes(times);
   return { ...calculateWorkingHoursAndBreaks(swipes), swipes, isSessionOpen };
+};
+
+export const getSwipeCount = (attendance: Attendance | null): number => {
+  if (!attendance) return 0;
+  const paddedSwipes = attendance.isSessionOpen ? 1 : 0;
+  return attendance.swipes.length * 2 - paddedSwipes;
+};
+
+export const getDaySegments = (attendance: Attendance): DaySegment[] => {
+  const segments: DaySegment[] = [];
+  attendance.swipes.forEach(([swipeIn, swipeOut], index) => {
+    segments.push({
+      kind: "work",
+      start: swipeIn,
+      end: swipeOut,
+      seconds: Math.max(0, toSeconds(swipeOut) - toSeconds(swipeIn)),
+    });
+    const nextPair = attendance.swipes[index + 1];
+    if (nextPair) {
+      segments.push({
+        kind: "break",
+        start: swipeOut,
+        end: nextPair[0],
+        seconds: Math.max(0, toSeconds(nextPair[0]) - toSeconds(swipeOut)),
+      });
+    }
+  });
+  return segments;
 };
 
 export const getTargetCompletionSeconds = (attendance: Attendance, requiredSeconds: number): number | null => {

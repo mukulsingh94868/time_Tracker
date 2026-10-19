@@ -12,23 +12,26 @@ const DEVELOPERS: Developer[] = [
 
 export default function Footer() {
   return (
-    <footer className="shrink-0 border-t border-[var(--card-border)] bg-[var(--header-bg)]">
+    <footer className="border-t border-[var(--card-border)]">
       <div
         id="developers"
-        className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2"
+        className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-5 sm:flex-row sm:px-6 lg:px-8"
       >
-        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Developed by</span>
-        {DEVELOPERS.map(({ initials, name }) => (
-          <div
-            key={initials}
-            className="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-[var(--card-bg)] border border-[var(--card-border)]"
-          >
-            <span className="w-6 h-6 rounded-full bg-[var(--primary-light)] text-[var(--primary)] text-[10px] font-semibold flex items-center justify-center">
-              {initials}
+        <p className="text-xs text-[var(--text-muted)]">Zentek Time Tracker · Runs entirely in your browser</p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="text-xs text-[var(--text-muted)]">Developed by</span>
+          {DEVELOPERS.map(({ initials, name }) => (
+            <span
+              key={initials}
+              className="inline-flex items-center gap-2 rounded-full border border-[var(--card-border)] bg-[var(--card-bg)] py-1 pl-1 pr-3"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[var(--primary-light)] text-[9px] font-semibold text-[var(--primary)]">
+                {initials}
+              </span>
+              <span className="text-xs font-medium text-[var(--text-secondary)]">{name}</span>
             </span>
-            <span className="text-sm font-medium text-[var(--text-primary)]">{name}</span>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </footer>
   );

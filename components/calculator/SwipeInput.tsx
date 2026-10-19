@@ -1,28 +1,32 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Clipboard, X } from "lucide-react";
-import { readClipboardText } from "@/services/clipboardService";
-
-const ACTION_BUTTON_CLASS =
-  "w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--surface-hover)] transition-colors";
+import { ClipboardPaste, X } from "lucide-react";
+import Button from "@/components/ui/Button";
+import CardHeader from "@/components/ui/CardHeader";
 
 interface SwipeInputProps {
   value: string;
   onChange: (value: string) => void;
+  onPaste: () => void;
+  swipeCount: number;
+  isSessionOpen: boolean;
+  hasError: boolean;
 }
 
-export default function SwipeInput({ value, onChange }: Readonly<SwipeInputProps>) {
+export default function SwipeInput({
+  value,
+  onChange,
+  onPaste,
+  swipeCount,
+  isSessionOpen,
+  hasError,
+}: Readonly<SwipeInputProps>) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
-
-  const handlePasteFromClipboard = async () => {
-    const text = await readClipboardText();
-    if (text) onChange(text);
-  };
 
   const handleClear = () => {
     onChange("");
@@ -30,42 +34,62 @@ export default function SwipeInput({ value, onChange }: Readonly<SwipeInputProps
   };
 
   return (
-    <div className="mb-5">
-      <label
-        htmlFor="swipe-data"
-        className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2"
-      >
-        Swipe Data Logs
+    <div>
+      <CardHeader
+        title="Swipe data"
+        description="Copy the Swipe In/Out log from GreytHr and paste it here."
+        className="mb-3"
+        action={
+          <>
+            {value && (
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={X}
+                onClick={handleClear}
+                aria-label="Clear swipe data"
+                className="hover:text-[var(--danger)]"
+              >
+                Clear
+              </Button>
+            )}
+            <Button size="sm" icon={ClipboardPaste} onClick={onPaste} aria-label="Paste from clipboard">
+              Paste
+            </Button>
+          </>
+        }
+      />
+      <label htmlFor="swipe-data" className="sr-only">
+        Swipe data logs
       </label>
-      <div className="relative">
-        <textarea
-          ref={textareaRef}
-          id="swipe-data"
-          className="w-full h-56 p-3.5 pr-12 text-sm leading-relaxed font-mono rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none focus:ring-2 focus:ring-[var(--input-focus)]/20 focus:border-[var(--input-focus)] resize-none transition-all"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={"Paste your swipe logs here...\n\nExample:\nIN\n09:00:15 am\nOUT\n01:00:30 pm\nIN\n01:45:00 pm"}
-        />
-        <div className="absolute bottom-3 right-3 flex items-center gap-1">
-          {value && (
-            <button
-              type="button"
-              onClick={handleClear}
-              title="Clear"
-              className={`${ACTION_BUTTON_CLASS} hover:text-[var(--danger)]`}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={handlePasteFromClipboard}
-            title="Paste from clipboard"
-            className={`${ACTION_BUTTON_CLASS} hover:text-[var(--text-primary)]`}
-          >
-            <Clipboard className="w-4 h-4" />
-          </button>
-        </div>
+      <textarea
+        ref={textareaRef}
+        id="swipe-data"
+        spellCheck={false}
+        aria-invalid={hasError}
+        className={`block h-60 w-full resize-y rounded-xl border bg-[var(--input-bg)] p-3.5 font-mono text-[13px] leading-relaxed text-[var(--text-primary)] outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-[var(--text-muted)] focus:ring-4 focus-visible:outline-none ${
+          hasError
+            ? "border-[var(--danger-border)] focus:border-[var(--danger)] focus:ring-[var(--danger-bg)]"
+            : "border-[var(--input-border)] hover:border-[var(--text-muted)] focus:border-[var(--input-focus)] focus:ring-[var(--primary-glow)]"
+        }`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={"Paste your swipe logs here...\n\nExample:\nIN\n09:00:15 am\nOUT\n01:00:30 pm\nIN\n01:45:00 pm"}
+      />
+      <div className="mt-2 flex min-h-5 flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+        {swipeCount > 0 ? (
+          <span className="inline-flex items-center gap-1.5 text-[var(--text-secondary)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--success)]" aria-hidden="true" />
+            <span className="tabular-nums">
+              {swipeCount} {swipeCount === 1 ? "swipe" : "swipes"} detected
+            </span>
+          </span>
+        ) : (
+          <span className="text-[var(--text-muted)]">IN/OUT labels are optional, only times are read.</span>
+        )}
+        {isSessionOpen && (
+          <span className="text-[var(--text-muted)]">Last swipe is open, closed with the out time below</span>
+        )}
       </div>
     </div>
   );
