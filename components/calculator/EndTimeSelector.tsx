@@ -68,7 +68,7 @@ export default function EndTimeSelector({
           </span>
           <span className="sm:ml-auto inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[var(--success)]">
             <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
-            Live
+            <span>Live</span>
           </span>
         </div>
       )}

@@ -18,7 +18,7 @@ export const parseSwipeTimes = (data: string): string[] => {
     times.push(`${pad(hours)}:${pad(minutes)}:${pad(seconds)}`);
   }
 
-  return times.sort();
+  return times.sort((a, b) => a.localeCompare(b));
 };
 
 export const pairSwipes = (times: string[]): SwipePair[] => {
