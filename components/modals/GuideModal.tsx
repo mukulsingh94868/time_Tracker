@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Modal from "@/components/modals/Modal";
+import { GREYTHR_URL } from "@/constants/links";
 
 interface GuideModalProps {
   onClose: () => void;
@@ -21,7 +22,7 @@ const GUIDE_STEPS: GuideStep[] = [
       <>
         Open{" "}
         <a
-          href="https://hiretek.greythr.com/"
+          href={GREYTHR_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="font-medium text-[var(--primary)] underline-offset-2 hover:underline"

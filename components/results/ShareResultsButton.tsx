@@ -1,9 +1,16 @@
 "use client";
 
-import { AlertCircle, Check, Download, Loader2, Share2, type LucideIcon } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { CAPTURE_EXCLUDE_ATTRIBUTE } from "@/services/screenshotService";
 import type { ShareStatus } from "@/types/share";
+import {
+  AlertCircle,
+  Check,
+  Download,
+  Loader2,
+  Share2,
+  type LucideIcon,
+} from "lucide-react";
 
 interface ShareResultsButtonProps {
   status: ShareStatus;
@@ -18,11 +25,21 @@ interface StatusView {
 }
 
 const STATUS_VIEWS: Record<ShareStatus, StatusView> = {
-  idle: { icon: Share2, label: "Copy as image", announcement: "", className: "" },
-  copying: { icon: Loader2, label: "Copying…", announcement: "Copying results as an image", className: "" },
+  idle: {
+    icon: Share2,
+    label: "Copy as image",
+    announcement: "",
+    className: "",
+  },
+  copying: {
+    icon: Loader2,
+    label: "Copying…",
+    announcement: "Copying results as an image",
+    className: "",
+  },
   copied: {
     icon: Check,
-    label: "Copied, paste in Teams",
+    label: "Copied to clipboard",
     announcement: "Results image copied to clipboard",
     className: "text-[var(--success)] border-[var(--success-border)]",
   },
@@ -40,7 +57,10 @@ const STATUS_VIEWS: Record<ShareStatus, StatusView> = {
   },
 };
 
-export default function ShareResultsButton({ status, onShare }: Readonly<ShareResultsButtonProps>) {
+export default function ShareResultsButton({
+  status,
+  onShare,
+}: Readonly<ShareResultsButtonProps>) {
   const view = STATUS_VIEWS[status];
   const excludeFromCapture = { [CAPTURE_EXCLUDE_ATTRIBUTE]: "true" };
 

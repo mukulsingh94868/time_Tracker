@@ -32,16 +32,16 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 
 | Folder | Purpose |
 |--------|---------|
-| `components/layout/` | Header, Footer |
+| `components/layout/` | Header, Footer, WelcomeHero (greeting, live clock, status line, GreytHr link) |
 | `components/calculator/` | InputForm, SwipeInput, DayTypeSelector, EndTimeSelector |
 | `components/results/` | ResultsPanel, ResultsEmptyState, ShareResultsButton, TargetCard, StatCard, DurationDisplay, DayTimeline, BreakSessionsTable |
-| `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing, Logo |
+| `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing, Logo, ExternalLinkButton |
 | `components/modals/` | Modal (shared dialog shell with title, Escape, backdrop close), GuideModal, VideoModal |
-| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime`, `useShareResults` (copy results as image) |
+| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime`, `useShareResults` (copy results as image), `useNow` (live clock, null until mounted) |
 | `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService`, `screenshotService` (html-to-image capture, clipboard image, PNG download) |
 | `utils/` | `time.ts` - pure time conversion and formatting helpers |
-| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps) |
-| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones), `share.ts` (share status) |
+| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps), `button.ts` (button class maps), `links.ts` (external URLs) |
+| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones), `share.ts` (share status), `button.ts` (button variants/sizes) |
 
 ## Rules for Agents
 
@@ -53,6 +53,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 - Reference colors as `bg-[var(--card-bg)]`, `text-[var(--text-primary)]`, etc.
 - Build UI from `components/ui/` primitives; semantic tone classes live in `constants/theme.ts`
 - Use `motion-safe:` for animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`)
+- Read the current time on the client only (`useNow` returns null until mounted) to avoid static-export hydration mismatches
 - Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
 - Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
 - Inside the captured results area, color SVG shapes with `stroke`/`fill="currentColor"` plus a `text-*` class on the `<svg>`; html-to-image drops classes on SVG child elements

@@ -5,10 +5,7 @@ export interface HoursMinutes {
 
 export const pad = (value: number): string => value.toString().padStart(2, "0");
 
-export const getCurrentTimeStr = (): string => {
-  const now = new Date();
-  return `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-};
+export const getCurrentTimeStr = (): string => toTimeString(new Date());
 
 export const normalizeTime = (time: string): string => (time.length === 5 ? `${time}:00` : time);
 
@@ -37,6 +34,12 @@ export const formatHoursLabel = (totalSecondsRaw: number): string => {
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 };
 
+export const formatTimeLeft = (totalSecondsRaw: number): string => {
+  const { h, m } = splitHoursMinutes(totalSecondsRaw);
+  if (h === 0) return `${Math.max(m, 1)} min`;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+};
+
 export const formatDurationCompact = (totalSecondsRaw: number): string => {
   const { h, m } = splitHoursMinutes(totalSecondsRaw);
   const seconds = pad(Math.floor(totalSecondsRaw % 60));
@@ -48,6 +51,19 @@ export const formatDurationCompact = (totalSecondsRaw: number): string => {
 
 export const formatDateLabel = (date: Date): string =>
   date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+
+export const formatLongDate = (date: Date): string =>
+  date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+
+export const toTimeString = (date: Date): string =>
+  `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+
+export const getGreeting = (date: Date): string => {
+  const hour = date.getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+};
 
 export const formatDateStamp = (date: Date): string =>
   `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
