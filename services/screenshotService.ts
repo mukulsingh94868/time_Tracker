@@ -1,5 +1,3 @@
-import { toBlob } from "html-to-image";
-
 export const CAPTURE_EXCLUDE_ATTRIBUTE = "data-capture-exclude";
 
 const CAPTURE_PADDING = 20;
@@ -8,6 +6,7 @@ const isIncludedInCapture = (node: Node): boolean =>
   !(node instanceof HTMLElement && node.hasAttribute(CAPTURE_EXCLUDE_ATTRIBUTE));
 
 export const captureElementAsPng = async (element: HTMLElement): Promise<Blob> => {
+  const { toBlob } = await import("html-to-image");
   const backgroundColor = getComputedStyle(document.body).getPropertyValue("--background").trim();
   const blob = await toBlob(element, {
     pixelRatio: 2,

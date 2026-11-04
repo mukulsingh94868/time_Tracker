@@ -54,6 +54,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 - Build UI from `components/ui/` primitives; semantic tone classes live in `constants/theme.ts`
 - Use `motion-safe:` for animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`)
 - Read the current time on the client only (`useNow` returns null until mounted) to avoid static-export hydration mismatches
+- Load heavy, on-demand libraries with dynamic `import()` inside the service that needs them (see `screenshotService`)
 - Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
 - Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
 - Inside the captured results area, color SVG shapes with `stroke`/`fill="currentColor"` plus a `text-*` class on the `<svg>`; html-to-image drops classes on SVG child elements
@@ -85,6 +86,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 | `app/page.tsx` | Redirect from `/` to `/home` |
 | `next.config.ts` | Static export config |
 | `tailwind.config.ts` | Tailwind configuration |
+| `eslint.config.mjs` | ESLint flat config |
 | `package.json` | Dependencies and scripts |
 
 ## Core Logic
@@ -108,7 +110,7 @@ All colors are CSS custom properties in `globals.css`:
 ```bash
 npm run dev      # Start development server
 npm run build    # Build static export
-npm run lint     # Run ESLint
+npm run lint     # Run ESLint (eslint.config.mjs: next/core-web-vitals + next/typescript)
 npm run typecheck # Run tsc --noEmit (strict)
 npm run start    # Start production server
 ```
