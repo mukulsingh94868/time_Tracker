@@ -34,14 +34,14 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 |--------|---------|
 | `components/layout/` | Header, Footer |
 | `components/calculator/` | InputForm, SwipeInput, DayTypeSelector, EndTimeSelector |
-| `components/results/` | ResultsPanel, ResultsEmptyState, TargetCard, StatCard, DurationDisplay, DayTimeline, BreakSessionsTable |
-| `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing |
+| `components/results/` | ResultsPanel, ResultsEmptyState, ShareResultsButton, TargetCard, StatCard, DurationDisplay, DayTimeline, BreakSessionsTable |
+| `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing, Logo |
 | `components/modals/` | Modal (shared dialog shell with title, Escape, backdrop close), GuideModal, VideoModal |
-| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime` |
-| `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService` |
+| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime`, `useShareResults` (copy results as image) |
+| `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService`, `screenshotService` (html-to-image capture, clipboard image, PNG download) |
 | `utils/` | `time.ts` - pure time conversion and formatting helpers |
 | `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps) |
-| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones) |
+| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones), `share.ts` (share status) |
 
 ## Rules for Agents
 
@@ -55,6 +55,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 - Use `motion-safe:` for animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`)
 - Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
 - Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
+- Inside the captured results area, color SVG shapes with `stroke`/`fill="currentColor"` plus a `text-*` class on the `<svg>`; html-to-image drops classes on SVG child elements
 - Match existing code style and naming conventions
 - Run `npm run typecheck` and `npm run lint` after code changes
 - Run `npm run build` to verify the build succeeds

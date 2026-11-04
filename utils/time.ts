@@ -46,6 +46,12 @@ export const formatDurationCompact = (totalSecondsRaw: number): string => {
   return `${m}m ${seconds}s`;
 };
 
+export const formatDateLabel = (date: Date): string =>
+  date.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+
+export const formatDateStamp = (date: Date): string =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
 export const formatClockShort = (time: string): string => {
   const [h, m] = parseTimeParts(time);
   const period = h >= 12 ? "pm" : "am";

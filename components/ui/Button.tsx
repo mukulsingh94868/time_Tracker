@@ -10,6 +10,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: LucideIcon;
+  iconClassName?: string;
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
@@ -37,6 +38,7 @@ export default function Button({
   variant = "secondary",
   size = "md",
   icon: Icon,
+  iconClassName = "",
   type = "button",
   className = "",
   children,
@@ -48,7 +50,7 @@ export default function Button({
       className={`inline-flex shrink-0 items-center justify-center rounded-lg font-medium select-none transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50 ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
       {...rest}
     >
-      {Icon && <Icon className={ICON_CLASSES[size]} aria-hidden="true" />}
+      {Icon && <Icon className={`${ICON_CLASSES[size]} ${iconClassName}`} aria-hidden="true" />}
       {children}
     </button>
   );
