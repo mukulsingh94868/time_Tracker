@@ -11,32 +11,31 @@ const SIZE = 112;
 const STROKE = 10;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const SVG_CLASS = "absolute inset-0 h-full w-full";
 
 export default function ProgressRing({ percent, tone, label }: Readonly<ProgressRingProps>) {
   const offset = CIRCUMFERENCE * (1 - percent / 100);
+  const center = SIZE / 2;
 
   return (
     <div className="relative h-24 w-24 shrink-0 sm:h-28 sm:w-28">
       <progress className="sr-only" value={Math.floor(percent)} max={100} aria-label={label} />
-      <svg className="h-full w-full -rotate-90" viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden="true">
+      <svg className={`${SVG_CLASS} text-[var(--card-border)]`} viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden="true">
+        <circle cx={center} cy={center} r={RADIUS} fill="none" stroke="currentColor" strokeWidth={STROKE} />
+      </svg>
+      <svg className={`${SVG_CLASS} ${TONE_CLASSES[tone].text}`} viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden="true">
         <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
+          cx={center}
+          cy={center}
           r={RADIUS}
           fill="none"
-          strokeWidth={STROKE}
-          className="stroke-[var(--card-border)]"
-        />
-        <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          fill="none"
+          stroke="currentColor"
           strokeWidth={STROKE}
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
           strokeDashoffset={offset}
-          className={`transition-[stroke-dashoffset] duration-700 ease-out ${TONE_CLASSES[tone].stroke}`}
+          transform={`rotate(-90 ${center} ${center})`}
+          className="transition-[stroke-dashoffset] duration-700 ease-out"
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">

@@ -6,7 +6,7 @@ A client-side utility tool for Zentek employees to calculate working hours and b
 
 ### Purpose
 
-Employees log in to [GreytHr](https://hiretek.greythr.com/), copy their swipe-in/swipe-out attendance logs, paste them into the app, and instantly get a breakdown of:
+Employees log in to [GreytHr](https://zentek.greythr.com/), copy their swipe-in/swipe-out attendance logs, paste them into the app, and instantly get a breakdown of:
 
 - **Total working hours** (sum of all IN-OUT sessions)
 - **Total break time** (gaps between OUT and next IN)

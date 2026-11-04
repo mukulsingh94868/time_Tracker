@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   icons: {
     icon: { url: "/favicon.svg", type: "image/svg+xml" },
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#090c14",
+  colorScheme: "dark",
 };
 
 interface RootLayoutProps {

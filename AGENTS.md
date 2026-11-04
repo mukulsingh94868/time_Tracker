@@ -32,16 +32,16 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 
 | Folder | Purpose |
 |--------|---------|
-| `components/layout/` | Header, Footer |
+| `components/layout/` | Header, Footer, WelcomeHero (greeting, live clock, status line, GreytHr link) |
 | `components/calculator/` | InputForm, SwipeInput, DayTypeSelector, EndTimeSelector |
-| `components/results/` | ResultsPanel, ResultsEmptyState, TargetCard, StatCard, DurationDisplay, DayTimeline, BreakSessionsTable |
-| `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing |
+| `components/results/` | ResultsPanel, ResultsEmptyState, ShareResultsButton, TargetCard, StatCard, DurationDisplay, DayTimeline, BreakSessionsTable |
+| `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing, Logo, ExternalLinkButton |
 | `components/modals/` | Modal (shared dialog shell with title, Escape, backdrop close), GuideModal, VideoModal |
-| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime` |
-| `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService` |
+| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime`, `useShareResults` (copy results as image), `useNow` (live clock, null until mounted) |
+| `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService`, `screenshotService` (html-to-image capture, clipboard image, PNG download) |
 | `utils/` | `time.ts` - pure time conversion and formatting helpers |
-| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps) |
-| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones) |
+| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps), `button.ts` (button class maps), `links.ts` (external URLs) |
+| `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones), `share.ts` (share status), `button.ts` (button variants/sizes) |
 
 ## Rules for Agents
 
@@ -53,8 +53,11 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 - Reference colors as `bg-[var(--card-bg)]`, `text-[var(--text-primary)]`, etc.
 - Build UI from `components/ui/` primitives; semantic tone classes live in `constants/theme.ts`
 - Use `motion-safe:` for animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`)
+- Read the current time on the client only (`useNow` returns null until mounted) to avoid static-export hydration mismatches
+- Load heavy, on-demand libraries with dynamic `import()` inside the service that needs them (see `screenshotService`)
 - Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
 - Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
+- Inside the captured results area, color SVG shapes with `stroke`/`fill="currentColor"` plus a `text-*` class on the `<svg>`; html-to-image drops classes on SVG child elements
 - Match existing code style and naming conventions
 - Run `npm run typecheck` and `npm run lint` after code changes
 - Run `npm run build` to verify the build succeeds
@@ -83,6 +86,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 | `app/page.tsx` | Redirect from `/` to `/home` |
 | `next.config.ts` | Static export config |
 | `tailwind.config.ts` | Tailwind configuration |
+| `eslint.config.mjs` | ESLint flat config |
 | `package.json` | Dependencies and scripts |
 
 ## Core Logic
@@ -106,7 +110,7 @@ All colors are CSS custom properties in `globals.css`:
 ```bash
 npm run dev      # Start development server
 npm run build    # Build static export
-npm run lint     # Run ESLint
+npm run lint     # Run ESLint (eslint.config.mjs: next/core-web-vitals + next/typescript)
 npm run typecheck # Run tsc --noEmit (strict)
 npm run start    # Start production server
 ```

@@ -5,5 +5,4 @@ export interface ToneClassSet {
   border: string;
   text: string;
   solid: string;
-  stroke: string;
 }
