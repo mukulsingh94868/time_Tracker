@@ -5,9 +5,11 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import WelcomeHero from "@/components/layout/WelcomeHero";
 import GuideModal from "@/components/modals/GuideModal";
+import ImportModal from "@/components/modals/ImportModal";
 import VideoModal from "@/components/modals/VideoModal";
 import ResultsPanel from "@/components/results/ResultsPanel";
 import useAttendanceCalculator from "@/hooks/useAttendanceCalculator";
+import useSwipeImport from "@/hooks/useSwipeImport";
 import { readClipboardText } from "@/services/clipboardService";
 import { useState } from "react";
 
@@ -16,6 +18,9 @@ export default function Home() {
   const [showVideoModal, setShowVideoModal] = useState<boolean>(false);
   const calculator = useAttendanceCalculator();
   const { attendance, summary, dayType, error, setInputData } = calculator;
+  const [showImportModal, setShowImportModal] = useState<boolean>(false);
+
+  useSwipeImport(setInputData);
 
   const handlePasteFromClipboard = async () => {
     const text = await readClipboardText();
@@ -27,7 +32,12 @@ export default function Home() {
       <Header onOpenGuide={() => setShowGuideModal(true)} onOpenVideo={() => setShowVideoModal(true)} />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        <WelcomeHero attendance={attendance} summary={summary} dayType={dayType} />
+        <WelcomeHero
+          attendance={attendance}
+          summary={summary}
+          dayType={dayType}
+          onOpenImport={() => setShowImportModal(true)}
+        />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-start">
           <InputForm calculator={calculator} onPaste={handlePasteFromClipboard} />
@@ -45,6 +55,7 @@ export default function Home() {
 
       {showGuideModal && <GuideModal onClose={() => setShowGuideModal(false)} />}
       {showVideoModal && <VideoModal onClose={() => setShowVideoModal(false)} />}
+      {showImportModal && <ImportModal onClose={() => setShowImportModal(false)} />}
     </div>
   );
 }

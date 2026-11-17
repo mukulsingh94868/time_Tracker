@@ -36,11 +36,12 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 | `components/calculator/` | InputForm, SwipeInput, DayTypeSelector, EndTimeSelector |
 | `components/results/` | ResultsPanel, ResultsEmptyState, ShareResultsButton, TargetCard, StatCard, DurationDisplay, DayTimeline, BreakSessionsTable |
 | `components/ui/` | Design-system primitives: Button, Card, CardHeader, RadioCardGroup, Alert, ProgressRing, Logo, ExternalLinkButton |
-| `components/modals/` | Modal (shared dialog shell with title, Escape, backdrop close), GuideModal, VideoModal |
-| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime`, `useShareResults` (copy results as image), `useNow` (live clock, null until mounted) |
-| `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService`, `screenshotService` (html-to-image capture, clipboard image, PNG download) |
+| `components/modals/` | Modal (shared dialog shell with title, Escape, backdrop close), GuideModal, VideoModal, ImportModal |
+| `components/import/` | BookmarkletLink (draggable "Zentek Import" bookmarklet) |
+| `hooks/` | `useAttendanceCalculator` (all calculator state + derived results), `useCurrentTime`, `useShareResults` (copy results as image), `useNow` (live clock, null until mounted), `useSwipeImport` (reads `#swipes=` from the URL) |
+| `services/` | `swipeParser` (text to times/pairs), `attendanceService` (hours, breaks, target), `clipboardService`, `screenshotService` (html-to-image capture, clipboard image, PNG download), `bookmarkletService` (GreytHR import script), `importService` (URL hash import) |
 | `utils/` | `time.ts` - pure time conversion and formatting helpers |
-| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps), `button.ts` (button class maps), `links.ts` (external URLs) |
+| `constants/` | `attendance.ts` (day types, end-time modes), `theme.ts` (tone class maps), `button.ts` (button class maps), `links.ts` (external URLs), `import.ts` (bookmarklet name, hash key, window name) |
 | `types/` | `attendance.ts` (data models, calculator state), `theme.ts` (tones), `share.ts` (share status), `button.ts` (button variants/sizes) |
 
 ## Rules for Agents
@@ -53,8 +54,10 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 - Reference colors as `bg-[var(--card-bg)]`, `text-[var(--text-primary)]`, etc.
 - Build UI from `components/ui/` primitives; semantic tone classes live in `constants/theme.ts`
 - Use `motion-safe:` for animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`)
+- Themes: dark is the default in `:root`; light overrides the same variables in `:root[data-theme="light"]`. Add any new color variable to both
 - Read the current time on the client only (`useNow` returns null until mounted) to avoid static-export hydration mismatches
 - Load heavy, on-demand libraries with dynamic `import()` inside the service that needs them (see `screenshotService`)
+- The GreytHR bookmarklet must stay plain ES2017 in `bookmarkletService.ts`, read only times with seconds and am/pm, and never handle credentials
 - Keep one component per file; put logic in `services/`, `utils/` or `hooks/`, not in components
 - Tailwind class strings in `constants/` are scanned via `tailwind.config.ts`; keep them as full literals
 - Inside the captured results area, color SVG shapes with `stroke`/`fill="currentColor"` plus a `text-*` class on the `<svg>`; html-to-image drops classes on SVG child elements

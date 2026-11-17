@@ -1,5 +1,9 @@
 import type { Tone, ToneClassSet } from "@/types/theme";
 
+export const THEME_STORAGE_KEY = "zentek-theme";
+
+export const THEME_INIT_SCRIPT = `try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");if(t!=="light"&&t!=="dark"){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.dataset.theme=t}catch(e){}`;
+
 export const TONE_CLASSES: Record<Tone, ToneClassSet> = {
   primary: {
     soft: "bg-[var(--primary-light)]",
