@@ -54,6 +54,7 @@ Zentek Time Tracker is a **client-side-only** Next.js 15 + React 19 application 
 - Reference colors as `bg-[var(--card-bg)]`, `text-[var(--text-primary)]`, etc.
 - Build UI from `components/ui/` primitives; semantic tone classes live in `constants/theme.ts`
 - Use `motion-safe:` for animations (`animate-fade-in`, `animate-scale-in`, `animate-slide-up`)
+- Themes: dark is the default in `:root`; light overrides the same variables in `:root[data-theme="light"]`. Add any new color variable to both
 - Read the current time on the client only (`useNow` returns null until mounted) to avoid static-export hydration mismatches
 - Load heavy, on-demand libraries with dynamic `import()` inside the service that needs them (see `screenshotService`)
 - The GreytHR bookmarklet must stay plain ES2017 in `bookmarkletService.ts`, read only times with seconds and am/pm, and never handle credentials

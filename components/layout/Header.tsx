@@ -3,6 +3,7 @@
 import { BookOpen, PlayCircle } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
 interface HeaderProps {
   onOpenGuide: () => void;
@@ -29,6 +30,7 @@ export default function Header({ onOpenGuide, onOpenVideo }: Readonly<HeaderProp
           <Button variant="ghost" icon={PlayCircle} onClick={onOpenVideo} aria-label="Open video tutorial">
             <span className="hidden sm:inline">Tutorial</span>
           </Button>
+          <ThemeToggle />
         </nav>
       </div>
     </header>
