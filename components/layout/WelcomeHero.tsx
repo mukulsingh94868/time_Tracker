@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Zap } from "lucide-react";
+import Button from "@/components/ui/Button";
 import ExternalLinkButton from "@/components/ui/ExternalLinkButton";
 import useNow from "@/hooks/useNow";
 import { DAY_TYPES } from "@/constants/attendance";
@@ -18,10 +19,14 @@ import {
 } from "@/utils/time";
 import type { Attendance, DayTypeKey, TargetSummary } from "@/types/attendance";
 
-interface WelcomeHeroProps {
+interface StatusProps {
   attendance: Attendance | null;
   summary: TargetSummary | null;
   dayType: DayTypeKey;
+}
+
+interface WelcomeHeroProps extends StatusProps {
+  onOpenImport: () => void;
 }
 
 const GETTING_STARTED_STEPS = ["Open GreytHr", "Copy Swipe In/Out", "Paste into Swipe data"];
@@ -30,7 +35,7 @@ const Highlight = ({ children }: Readonly<{ children: string }>) => (
   <span className="font-semibold text-[var(--text-primary)]">{children}</span>
 );
 
-interface StatusLineProps extends WelcomeHeroProps {
+interface StatusLineProps extends StatusProps {
   nowSeconds: number | null;
 }
 
@@ -77,7 +82,7 @@ function StatusLine({ attendance, summary, dayType, nowSeconds }: Readonly<Statu
   );
 }
 
-export default function WelcomeHero({ attendance, summary, dayType }: Readonly<WelcomeHeroProps>) {
+export default function WelcomeHero({ attendance, summary, dayType, onOpenImport }: Readonly<WelcomeHeroProps>) {
   const now = useNow();
 
   return (
@@ -133,7 +138,12 @@ export default function WelcomeHero({ attendance, summary, dayType }: Readonly<W
               <span className="mt-1 block h-8 w-40 rounded-md bg-[var(--surface-raised)] motion-safe:animate-pulse" />
             )}
           </div>
-          <ExternalLinkButton href={GREYTHR_URL}>Open GreytHr</ExternalLinkButton>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="primary" icon={Zap} onClick={onOpenImport}>
+              One-click import
+            </Button>
+            <ExternalLinkButton href={GREYTHR_URL}>Open GreytHr</ExternalLinkButton>
+          </div>
         </div>
       </div>
     </section>
